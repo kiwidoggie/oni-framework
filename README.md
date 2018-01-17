@@ -1,12 +1,10 @@
-# oni-framework
-Embedded systems C2 software written in C/C#
 # Oni-Framework
 
 
 Oni framework is a platform for embedded device software development. It is used in order to remotely debug/add functionality to an embedded device. As of right now, the main concepts are a fully modular plugin system, with local and remote rpc. This was designed to run at ring-0 privilege level, but with some tweaks can also be used in ring-3 levels. Be warned, this is *NOT* for production use, only for developers who want an easy building platform for research.
 
   - Currently this project is in development, and may not be fully tested
-  - Will need decent knowledge of C
+  - Will need decent knowledge of C/C#
   - Magic
 
 # New Features!
