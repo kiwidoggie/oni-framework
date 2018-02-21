@@ -2,6 +2,7 @@
 
 // 64-bit ARM FreeBSD based device
 #define ONI_PLATFORM_AARCH64_BSD	1
+#define ONI_PS4_PLATFORM			2
 
 // Unknown device
 #define ONI_UNKNOWN_PLATFORM		-1
@@ -13,7 +14,7 @@
 
 // The current platform configured by oni
 #ifndef ONI_PLATFORM
-#define ONI_PLATFORM ONI_UNKNOWN_PLATFORM
+#define ONI_PLATFORM ONI_PS4_PLATFORM
 #endif
 
 // The maximum number of plugins for use with oni
