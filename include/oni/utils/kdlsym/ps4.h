@@ -78,4 +78,6 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sys_shutdown			0x003ED250
 #define kdlsym_addr_sys_unlink				0x00441730
 #define kdlsym_addr_sys_setuid				0x00114450
+
+#define kdlsym_addr_self_orbis_sysvec 0x01460610
 #endif
