@@ -7,6 +7,9 @@
 #include <sys/proc.h>
 #include <vm/vm.h>
 
+#include <sys/_iovec.h>
+#include <sys/uio.h>
+
 #ifndef MAP_FAILED
 #define MAP_FAILED      ((void *)-1)
 #endif
@@ -55,6 +58,29 @@ int mlock(void* address, uint64_t size)
 	uap.addr = (const void*)((uint64_t)address & 0xffffffffffffc000);
 	uap.len = size;
 	error = mlock(td, &uap);
+	if (error)
+		return -error;
+
+	// return socket
+	return td->td_retval[0];
+}
+
+int mlockall(int how)
+{
+	int(*sys_mlockall)(struct thread*, struct mlockall_args*) = kdlsym(sys_mlockall);
+	if (!sys_mlockall)
+		return -1;
+
+	int error;
+	struct mlockall_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.how = how;
+	error = sys_mlockall(td, &uap);
 	if (error)
 		return -error;
 
@@ -622,6 +648,54 @@ int ksetuid(uid_t uid)
 	return td->td_retval[0];
 }
 
+int kptrace(int req, pid_t pid, caddr_t addr, int data)
+{
+	int(*sys_ptrace)(struct thread *, struct ptrace_args *) = kdlsym(sys_ptrace);
+
+	int error;
+	struct ptrace_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.req = req;
+	uap.pid = pid;
+	uap.addr = addr;
+	uap.data = data;
+
+	error = sys_ptrace(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
+int kkill(int pid, int signum)
+{
+	int(*sys_kill)(struct thread *, struct kill_args *) = kdlsym(sys_kill);
+
+	int error;
+	struct kill_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.pid = pid;
+	uap.signum = signum;
+
+	error = sys_kill(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
 int kthread_stop(struct task_struct *task)
 {
 	return 0;
@@ -647,4 +721,46 @@ void* kcalloc(size_t n, size_t size)
 	if (!p) return NULL;
 
 	return kmemset(p, 0, total);
+}
+
+
+int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, int write)
+{
+	struct thread* td = curthread;
+	struct iovec iov;
+	struct uio uio;
+	int ret;
+
+	if (!p) {
+		ret = EINVAL;
+		goto error;
+	}
+
+	if (size == 0) {
+		if (n)
+			*n = 0;
+		ret = 0;
+		goto error;
+	}
+
+	kmemset(&iov, 0, sizeof(iov));
+	iov.iov_base = (caddr_t)data;
+	iov.iov_len = size;
+
+	kmemset(&uio, 0, sizeof(uio));
+	uio.uio_iov = &iov;
+	uio.uio_iovcnt = 1;
+	uio.uio_offset = (off_t)ptr;
+	uio.uio_resid = (ssize_t)size;
+	uio.uio_segflg = UIO_SYSSPACE;
+	uio.uio_rw = write ? UIO_WRITE : UIO_READ;
+	uio.uio_td = td;
+
+	int(*proc_rwmem)(struct proc *p, struct uio *uio) = kdlsym(proc_rwmem);
+	ret = proc_rwmem(p, &uio);
+	if (n)
+		*n = (size_t)((ssize_t)size - uio.uio_resid);
+
+error:
+	return ret;
 }

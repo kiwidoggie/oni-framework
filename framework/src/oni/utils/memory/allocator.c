@@ -31,7 +31,7 @@ struct allocation_t* __malloc(uint64_t size)
 	allocation->data = data;
 	allocation->size = size;
 	allocation->count = 0;
-	allocation->lock.lock = 0;
+	spin_init(&allocation->lock);
 
 	return allocation;
 }
@@ -51,7 +51,7 @@ void __free(struct allocation_t* allocation)
 	}
 
 	allocation->count = 0;
-	allocation->lock.lock = 0;
+	spin_init(&allocation->lock);
 	allocation->size = 0;
 
 	kmem_free(map, allocation, sizeof(struct allocation_t));

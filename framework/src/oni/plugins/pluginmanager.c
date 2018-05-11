@@ -13,7 +13,7 @@ void pluginmanager_init(struct pluginmanager_t* manager)
 	for (uint32_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
 		manager->plugins[i] = 0;
 
-	manager->lock.lock = 0;
+	spin_init(&manager->lock);
 }
 
 int32_t pluginmanager_findFreePluginIndex(struct pluginmanager_t* manager)

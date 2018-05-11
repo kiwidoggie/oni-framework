@@ -1,3 +1,8 @@
+# If the FREEBSD headers path is not set we will try to use the relative path
+ifeq ($(BSD_INC),)
+BSD_INC := ../freebsd-headers
+endif
+
 # Project name
 PROJ_NAME := OniFramework
 
@@ -14,7 +19,9 @@ AS		:=	ar
 OBJCOPY	:=	objcopy
 
 # Output directory
-OUT_DIR	:=	bld
+ifeq ($(OUT_DIR),)
+OUT_DIR	:=	build
+endif
 
 # Source directory
 SRC_DIR	:=	src

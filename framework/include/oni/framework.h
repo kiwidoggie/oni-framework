@@ -1,18 +1,37 @@
 #pragma once
+#include <oni/utils/types.h>
 
-struct messagemanager_t;
 struct logger_t;
+struct messagemanager_t;
+struct pluginmanager_t;
+struct rpcserver_t;
 
-/*
-	oniframework_t
-
-	Core framework
-*/
-struct oniframework_t
+struct framework_t
 {
-	// Message manager for the framework
-	struct messagemanager_t* messageManager;
+	char* homePath; // /user/framework
+	char* configPath; // /user/framework/config.json
+	char* pluginsPath; // /user/framework/plugins
+	char* downloadPath; // /user/framework/download
 
-	// Logger for the framework
-	struct logger_t* logger;
+
+	struct messagemanager_t* messageManager;
+	struct rpcserver_t* rpcServer;
+	struct pluginmanager_t* pluginManager;
 };
+
+// Initialization parameters
+extern struct initparams_t* gInitParams;
+
+// Global logger
+extern struct logger_t* gLogger;
+
+// Base address of the kernel
+extern uint8_t* gKernelBase;
+
+// Default userland entry point
+extern int oni_initializeFramework();
+
+// Default kernelland entry point
+extern void oni_kernelInitialization(void* loaderInitParams);
+
+extern const char* gNull;

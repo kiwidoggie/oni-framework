@@ -8,6 +8,8 @@
 
 #if ONI_PLATFORM==ONI_UNKNOWN_PLATFORM
 #include "kdlsym/default.h"
+#elif ONI_PLATFORM==ONI_PLATFORM_SAFE_BSD
+#include "kdlsym/gunsafe2.h"
 #endif
 
 // Kernel base address, this must be filled out on-startup (normally done in oni_initializeKernel)

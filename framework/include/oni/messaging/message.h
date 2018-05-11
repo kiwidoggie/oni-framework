@@ -5,7 +5,7 @@
 #pragma once
 #include <oni/utils/types.h>
 
-#define RPCMESSAGE_HEADER_MAGIC 0xCC
+#define RPCMESSAGE_HEADER_MAGIC 0x05
 
 struct allocation_t;
 
@@ -17,28 +17,29 @@ enum MSG_CATEGORY
 	RPCCAT_DBG,
 	RPCCAT_FILE,
 	RPCCAT_CMD,
+	RPCCAT_MAX = 14,
 	RPCCAT_COUNT
 };
 
 struct message_header_t
 {
-	// Magic (default: 0xCC)
-	uint8_t magic;
+	// Header magic, default is 0101b or 5
+	uint64_t magic : 3;
 
-	// If this message is a request or reply
-	uint8_t request;
+	// Message category, max 14
+	uint64_t category : 4;
 
-	// Payload length
-	uint16_t payloadLength;
+	// On requests this is the message type, on replies it is error code
+	uint64_t error_type : 32;
 
-	// Category
-	enum MSG_CATEGORY category;
+	// Size of the payload that is going to be sent
+	uint64_t payloadSize : 16;
 
-	// User provided type
-	uint32_t type;
+	// Is this a request or response message
+	uint64_t request : 1;
 
-	// Error code
-	int32_t error;
+	// Reserved
+	uint64_t reserved : 7;
 };
 
 struct message_t

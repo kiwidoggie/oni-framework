@@ -23,6 +23,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_kproc_create			0xDEADC0DE
 
 #define kdlsym_addr_sys_mlock				0xDEADC0DE
+#define kdlsym_addr_sys_mlockall			0xDEADC0DE
 
 #define kdlsym_addr_pfind					0xDEADC0DE
 #define kdlsym_addr_printf					0xDEADC0DE
@@ -77,4 +78,9 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sys_shutdown			0xDEADC0DE
 #define kdlsym_addr_sys_unlink				0xDEADC0DE
 #define kdlsym_addr_sys_setuid				0xDEADC0DE
+#define kdlsym_addr_sys_ptrace				0xDEADC0DE
+#define kdlsym_addr_sscanf					0xDEADC0DE
+#define kdlsym_addr_mtx_init				0xDEADC0DE
+#define kdlsym_addr_sys_mlock				0xDEADC0DE
+#define kdlsym_addr_sys_kill				0xDEADC0DE
 #endif

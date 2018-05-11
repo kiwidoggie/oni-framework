@@ -1,8 +1,5 @@
-
-
-
-
 #pragma once
+
 #include <oni/utils/lock.h>
 #include <oni/utils/types.h>
 

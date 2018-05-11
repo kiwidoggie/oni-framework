@@ -16,14 +16,13 @@ void message_init(struct message_t* message, int32_t socket)
 	// Initialize this message header
 	message->header.magic = RPCMESSAGE_HEADER_MAGIC;
 	message->header.category = RPCCAT_NONE;
-	message->header.type = 0;
-	message->header.payloadLength = 0;
-	message->header.error = 0;
+	message->header.error_type = 0;
+	message->header.payloadSize = 0;
 
 	message->socket = socket;
 
 	// Initialize the payload pointer
-	message->payload = 0;
+	message->payload = NULL;
 }
 
 struct allocation_t* message_initParse(struct message_header_t* header, int32_t socket)

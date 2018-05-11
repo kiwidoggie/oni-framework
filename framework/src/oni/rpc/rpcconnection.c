@@ -178,14 +178,14 @@ void rpcconnection_serverThread(void* data)
 
 		WriteLog(LL_Debug, "checking payload length\n");
 		// If the payload length is bigger than the maximum buffer size, then fail
-		if (header->payloadLength > RPCCONNECTION_BUFFER_SIZE)
+		if (header->payloadSize > RPCCONNECTION_BUFFER_SIZE)
 		{
 			WriteLog(LL_Error, "payload length greater than buffer size.");
 			goto cleanup;
 		}
 
 		// Check to see how much data we actually got
-		uint64_t totalDataSize = recvSize + header->payloadLength;
+		uint64_t totalDataSize = recvSize + header->payloadSize;
 		WriteLog(LL_Debug, "total data size %lld", totalDataSize);
 		// Recv the payload
 		while (dataReceived < totalDataSize)
@@ -215,10 +215,10 @@ void rpcconnection_serverThread(void* data)
 		internalMessage->payload = 0;
 
 		// Allow us to send header-only messages
-		if (header->payloadLength != 0)
+		if (header->payloadSize != 0)
 		{
-			WriteLog(LL_Debug, "allocating payload length %d", header->payloadLength);
-			internalMessage->payload = kmalloc(header->payloadLength);
+			WriteLog(LL_Debug, "allocating payload length %d", header->payloadSize);
+			internalMessage->payload = kmalloc(header->payloadSize);
 			if (!internalMessage->payload)
 			{
 				WriteLog(LL_Error, "error allocating payload");
@@ -226,10 +226,10 @@ void rpcconnection_serverThread(void* data)
 			}
 
 			WriteLog(LL_Debug, "zeroing payload");
-			kmemset(internalMessage->payload, 0, header->payloadLength);
+			kmemset(internalMessage->payload, 0, header->payloadSize);
 
 			WriteLog(LL_Debug, "copying payload");
-			kmemcpy(internalMessage->payload, (((char*)(connection->buffer)) + sizeof(struct message_header_t)), header->payloadLength);
+			kmemcpy(internalMessage->payload, (((char*)(connection->buffer)) + sizeof(struct message_header_t)), header->payloadSize);
 
 		}
 		

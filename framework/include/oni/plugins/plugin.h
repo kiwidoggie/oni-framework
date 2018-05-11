@@ -1,7 +1,3 @@
-
-
-
-
 #pragma once
 #include <oni/utils/types.h>
 

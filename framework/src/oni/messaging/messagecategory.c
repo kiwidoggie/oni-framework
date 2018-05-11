@@ -1,7 +1,4 @@
 
-
-
-
 #include <oni/messaging/messagecategory.h>
 #include <oni/messaging/message.h>
 
@@ -13,7 +10,7 @@ void rpccategory_init(struct messagecategory_t* dispatcherCategory, uint8_t cate
 	if (!dispatcherCategory)
 		return;
 
-	if (category >= RPCCAT_COUNT)
+	if (category >= RPCCAT_MAX)
 		return;
 
 	dispatcherCategory->category = category;
@@ -35,12 +32,12 @@ int32_t rpccategory_findFreeCallbackIndex(struct messagecategory_t* category)
 	return -1;
 }
 
-void rpccategory_sendMessage(struct messagecategory_t* category, struct allocation_t* ref)
+void rpccategory_sendMessage(struct messagecategory_t* category, struct allocation_t* msg)
 {
-	if (!category || !ref)
+	if (!category || !msg)
 		return;
 
-	struct message_t* message = __get(ref);
+	struct message_t* message = __get(msg);
 	if (!message)
 		return;
 
@@ -53,15 +50,15 @@ void rpccategory_sendMessage(struct messagecategory_t* category, struct allocati
 		if (!callback)
 			continue;
 
-		if (callback->type != message->header.type)
+		if (callback->type != message->header.error_type)
 			continue;
 
 		if (!callback->callback)
 			continue;
 
-		callback->callback(ref);
+		callback->callback(msg);
 	}
 
 cleanup:
-	__dec(ref);
+	__dec(msg);
 }

@@ -8,12 +8,13 @@ void logger_init(struct logger_t* logger)
 	if (!logger)
 		return;
 
-	logger->logLevel = LL_Error;
+	logger->logLevel = LL_Debug;
 	logger->logHandle = -1;
-	logger->lock.lock = 0;
 
 	kmemset(logger->buffer, 0, sizeof(logger->buffer));
 	kmemset(logger->finalBuffer, 0, sizeof(logger->finalBuffer));
+
+	spin_init(&logger->lock);
 }
 
 void logger_writelog(struct logger_t* logger, enum LogLevels level, const char* function, int line, const char* fmt, ...)

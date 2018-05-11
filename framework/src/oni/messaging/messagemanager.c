@@ -1,7 +1,3 @@
-
-
-
-
 #include <oni/messaging/messagemanager.h>
 #include <oni/messaging/messagecategory.h>
 #include <oni/messaging/message.h>
@@ -11,100 +7,98 @@
 
 void __dec(struct allocation_t* allocation);
 
-void messagemanager_init(struct messagemanager_t* dispatcher)
+void messagemanager_init(struct messagemanager_t* manager)
 {
-	if (!dispatcher)
+	if (!manager)
 		return;
 
-	dispatcher->lock.lock = 0;
+	spin_init(&manager->lock);
 
-	kmemset(dispatcher->categories, 0, sizeof(dispatcher->categories));
+	kmemset(manager->categories, 0, sizeof(manager->categories));
 }
 
-int32_t messagemanager_findFreeCategoryIndex(struct messagemanager_t* dispatcher)
+int32_t messagemanager_findFreeCategoryIndex(struct messagemanager_t* manager)
 {
-	if (!dispatcher)
+	if (!manager)
 		return -1;
 
 	int32_t result = -1;
 
-	spin_lock(&dispatcher->lock);
+	spin_lock(&manager->lock);
 	for (uint32_t i = 0; i < RPCDISPATCHER_MAX_CATEGORIES; ++i)
 	{
-		if (!dispatcher->categories[i])
+		if (!manager->categories[i])
 		{
 			result = i;
 			break;
 		}
 	}
-	spin_unlock(&dispatcher->lock);
+	spin_unlock(&manager->lock);
 
 	return result;
 }
 
-uint32_t messagemanager_freeCategoryCount(struct messagemanager_t* dispatcher)
+uint32_t messagemanager_freeCategoryCount(struct messagemanager_t* manager)
 {
-	if (!dispatcher)
+	if (!manager)
 		return 0;
 
 	uint32_t clientCount = 0;
-	spin_lock(&dispatcher->lock);
+	spin_lock(&manager->lock);
 	for (uint32_t i = 0; i < RPCDISPATCHER_MAX_CATEGORIES; ++i)
 	{
-		if (dispatcher->categories[i])
+		if (manager->categories[i])
 			clientCount++;
 	}
-	spin_unlock(&dispatcher->lock);
+	spin_unlock(&manager->lock);
 
 	return clientCount;
 }
 
-struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* dispatcher, uint32_t category)
+struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* manager, uint32_t category)
 {
-	if (!dispatcher)
+	if (!manager)
 		return 0;
-
-	WriteLog(LL_Debug, "[+] got dispatcher %p category: %d", dispatcher, category);
 
 	if (category >= RPCCAT_COUNT)
 		return 0;
 
 	struct messagecategory_t* rpccategory = 0;
 
-	spin_lock(&dispatcher->lock);
+	spin_lock(&manager->lock);
 	for (uint32_t i = 0; i < RPCDISPATCHER_MAX_CATEGORIES; ++i)
 	{
-		struct messagecategory_t* cat = dispatcher->categories[i];
+		struct messagecategory_t* cat = manager->categories[i];
 
 		if (!cat)
 			continue;
 
 		if (cat->category == category)
 		{
-			rpccategory = dispatcher->categories[i];
+			rpccategory = manager->categories[i];
 			break;
 		}
 	}
-	spin_unlock(&dispatcher->lock);
+	spin_unlock(&manager->lock);
 
 	return rpccategory;
 }
 
-int32_t messagemanager_registerCallback(struct messagemanager_t* dispatcher, uint32_t callbackCategory, uint32_t callbackType, void* callback)
+int32_t messagemanager_registerCallback(struct messagemanager_t* manager, uint32_t callbackCategory, uint32_t callbackType, void* callback)
 {
 	// Verify that the dispatcher and listener are valid
-	if (!dispatcher || !callback)
+	if (!manager || !callback)
 		return 0;
 
 	// Verify the listener category
 	if (callbackCategory >= RPCCAT_COUNT)
 		return 0;
 
-	struct messagecategory_t* category = messagemanager_getCategory(dispatcher, callbackCategory);
+	struct messagecategory_t* category = messagemanager_getCategory(manager, callbackCategory);
 	if (!category)
 	{
 		// Get a free listener index
-		int32_t freeIndex = messagemanager_findFreeCategoryIndex(dispatcher);
+		int32_t freeIndex = messagemanager_findFreeCategoryIndex(manager);
 		if (freeIndex == -1)
 			return 0;
 
@@ -117,7 +111,7 @@ int32_t messagemanager_registerCallback(struct messagemanager_t* dispatcher, uin
 		rpccategory_init(category, callbackCategory);
 
 		// Set the category in our list
-		dispatcher->categories[freeIndex] = category;
+		manager->categories[freeIndex] = category;
 	}
 
 	// Get the next free listener
@@ -126,12 +120,11 @@ int32_t messagemanager_registerCallback(struct messagemanager_t* dispatcher, uin
 		return 0;
 
 	// Install the listener to the category
-	//category->callbacks[callbackIndex] = callback;
 	struct messagecategory_callback_t* categoryCallback = (struct messagecategory_callback_t*)kmalloc(sizeof(struct messagecategory_callback_t));
 	if (!categoryCallback)
 		return 0;
 
-	categoryCallback->type = callbackType; // TODO: Set type
+	categoryCallback->type = callbackType; // Set type
 	categoryCallback->callback = callback;
 
 	category->callbacks[callbackIndex] = categoryCallback;
@@ -139,12 +132,12 @@ int32_t messagemanager_registerCallback(struct messagemanager_t* dispatcher, uin
 	return 1;
 }
 
-void messagemanager_sendMessage(struct messagemanager_t* dispatcher, struct allocation_t* ref)
+void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocation_t* msg)
 {
-	if (!dispatcher || !ref)
+	if (!manager || !msg)
 		return;
 
-	struct message_t* message = __get(ref);
+	struct message_t* message = __get(msg);
 	if (!message)
 	{
 		WriteLog(LL_Error, "could not get reference to message");
@@ -157,13 +150,11 @@ void messagemanager_sendMessage(struct messagemanager_t* dispatcher, struct allo
 		WriteLog(LL_Debug, "[+] Sending network response back to PC");
 		kwrite(message->socket, &message->header, sizeof(message->header));
 
-		if (message->header.payloadLength > 0 && message->payload != NULL && message->header.error == 0)
-			kwrite(message->socket, message->payload, message->header.payloadLength);
+		if (message->header.payloadSize > 0 && message->payload != NULL && message->header.error_type == 0)
+			kwrite(message->socket, message->payload, message->header.payloadSize);
 
 		goto cleanup;
 	}
-
-	WriteLog(LL_Debug, "[+] sendMessage dispatcher: %p ref: %p message: %p", dispatcher, ref, message);
 
 	if (message->header.category >= RPCCAT_COUNT)
 	{
@@ -171,9 +162,7 @@ void messagemanager_sendMessage(struct messagemanager_t* dispatcher, struct allo
 		goto cleanup;
 	}
 
-	WriteLog(LL_Debug, "[+] getting dispatcher category");
-
-	struct messagecategory_t* category = messagemanager_getCategory(dispatcher, message->header.category);
+	struct messagecategory_t* category = messagemanager_getCategory(manager, message->header.category);
 	if (!category)
 	{
 		WriteLog(LL_Debug, "[-] could not get dispatcher category");
@@ -181,7 +170,6 @@ void messagemanager_sendMessage(struct messagemanager_t* dispatcher, struct allo
 	}
 
 	// Iterate through all of the callbacks
-	WriteLog(LL_Debug, "[+] iterating callbacks");
 	for (uint32_t l_CallbackIndex = 0; l_CallbackIndex < RPCCATEGORY_MAX_CALLBACKS; ++l_CallbackIndex)
 	{
 		// Get the category callback structure
@@ -192,24 +180,24 @@ void messagemanager_sendMessage(struct messagemanager_t* dispatcher, struct allo
 			continue;
 
 		// Check the type of the message
-		if (l_Callback->type != message->header.type)
+		if (l_Callback->type != message->header.error_type)
 			continue;
 
 		// Call the callback with the provided message
-		WriteLog(LL_Debug, "[+] calling callback %p(%p)", l_Callback->callback, ref);
-		l_Callback->callback(ref);
+		WriteLog(LL_Debug, "[+] calling callback %p(%p)", l_Callback->callback, msg);
+		l_Callback->callback(msg);
 	}
 
 cleanup:
-	__dec(ref);
+	__dec(msg);
 }
 
-void messagemanager_sendSuccessMessage(struct messagemanager_t* dispatcher, struct allocation_t* ref)
+void messagemanager_sendSuccessMessage(struct messagemanager_t* manager, struct allocation_t* msg)
 {
-	if (!dispatcher || !ref)
+	if (!manager || !msg)
 		return;
 
-	struct message_t* message = __get(ref);
+	struct message_t* message = __get(msg);
 	if (!message)
 	{
 		WriteLog(LL_Error, "could not get reference to message");
@@ -224,33 +212,33 @@ void messagemanager_sendSuccessMessage(struct messagemanager_t* dispatcher, stru
 		goto cleanup;
 
 	// Set success error
-	message->header.error = 0;
+	message->header.error_type = 0;
 
-	WriteLog(LL_Debug, "sending success network response back to PC");
+	//WriteLog(LL_Debug, "sending success network response back to PC");
 
 	// Save the payload length
-	uint16_t payloadLength = message->header.payloadLength;
+	uint16_t payloadLength = message->header.payloadSize;
 
 	// Set set the payload length to 0 because we are not sending a payload
-	message->header.payloadLength = 0;
+	message->header.payloadSize = 0;
 
 	// Send response back to the PC
 	kwrite(message->socket, &message->header, sizeof(message->header));
 
 	// Set the payload length back so memory cleanup will happen normally
-	message->header.payloadLength = payloadLength;
+	message->header.payloadSize = payloadLength;
 
 cleanup:
 	message->header.request = request;
-	__dec(ref);
+	__dec(msg);
 }
 
-void messagemanager_sendErrorMessage(struct messagemanager_t* dispatcher, struct allocation_t* ref, int32_t error)
+void messagemanager_sendErrorMessage(struct messagemanager_t* manager, struct allocation_t* msg, int32_t error)
 {
-	if (!dispatcher || !ref)
+	if (!manager || !msg)
 		return;
 
-	struct message_t* message = __get(ref);
+	struct message_t* message = __get(msg);
 	if (!message)
 	{
 		WriteLog(LL_Error, "could not get reference to message");
@@ -263,27 +251,27 @@ void messagemanager_sendErrorMessage(struct messagemanager_t* dispatcher, struct
 	if (message->socket != -1)
 	{
 		// Set success error
-		message->header.error = 0;
+		message->header.error_type = 0;
 
-		WriteLog(LL_Debug, "sending success network response back to PC");
+		//WriteLog(LL_Debug, "sending success network response back to PC");
 
 		// Save the payload length
-		uint16_t payloadLength = message->header.payloadLength;
+		uint16_t payloadLength = message->header.payloadSize;
 
 		// Set set the payload length to 0 because we are not sending a payload
-		message->header.payloadLength = 0;
+		message->header.payloadSize = 0;
 
 		// The error should always be < 0
-		message->header.error = error < 0 ? error : -error;
+		message->header.error_type = error < 0 ? error : -error;
 
 		// Send response back to the PC
 		kwrite(message->socket, &message->header, sizeof(message->header));
 
 		// Set the payload length back so memory cleanup will happen normally
-		message->header.payloadLength = payloadLength;
+		message->header.payloadSize = payloadLength;
 	}
 
 	message->header.request = request;
 
-	__dec(ref);
+	__dec(msg);
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <oni/utils/lock.h>
+#include <sys/mutex.h>
 
 enum LogLevels
 {
@@ -21,7 +22,11 @@ enum LogLevels
 #define KWHT  "\x1B[37m"
 
 #define Logger_MaxBuffer 0x500
+#ifdef _DEBUG
 #define WriteLog(x, y, ...) logger_writelog(gLogger, x, __FUNCTION__, __LINE__, y, ##__VA_ARGS__)
+#else
+#define WriteLog(x, y, ...)
+#endif
 
 struct logger_t
 {
@@ -34,6 +39,8 @@ struct logger_t
 	volatile volatile int logHandle;
 
 	struct lock_t lock;
+
+	struct mtx mutex;
 };
 
 extern struct logger_t* gLogger;

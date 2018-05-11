@@ -11,6 +11,7 @@ struct thread;
 struct stat;
 
 extern int mlock(void* address, uint64_t size);
+extern int mlockall(int how);
 extern uint16_t khtons(uint16_t);
 extern void kclose(int socket);
 extern int ksocket(int, int, int);
@@ -26,6 +27,8 @@ extern int kfstat(int fd, struct stat* sb);
 extern int kstat(char* path, struct stat* buf);
 extern int kunlink(char* path);
 extern int ksetuid(uid_t uid);
+extern int kptrace(int req, pid_t pid, caddr_t addr, int data);
+extern int kkill(int pid, int signum);
 
 extern int kdup2(int oldd, int newd);
 extern int kshutdown(int s, int how);
@@ -44,3 +47,5 @@ extern void *kmemcpy(void *dest, const void *src, size_t n);
 extern void *kcalloc(size_t n, size_t size);
 
 extern void utilUSleep(int nanoseconds, const char* excuse);
+
+int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, int write);
