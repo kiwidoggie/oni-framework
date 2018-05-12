@@ -29,7 +29,7 @@ void rpcserver_init(struct rpcserver_t* server, struct proc* process)
 	WriteLog(LL_Debug, "zeroing connections");
 	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
 		server->connections[i] = 0;
-	
+
 	server->thread = 0;
 	server->isRunning = 0;
 
@@ -126,7 +126,7 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 	}
 
 	WriteLog(LL_Debug, "socket bound.");
-	
+
 	// Listen for clients
 	if (klisten(server->socket, 3) == -1)
 	{
@@ -217,7 +217,7 @@ void rpcserver_serverThread(void* data)
 		utilUSleep(100, RPC_SLEEP);
 
 		// Create the new client thread which will handle dispatching
-		
+
 		int creationResult = kthread_add(rpcconnection_serverThread, clientConnection, server->process, (struct thread**)&clientConnection->thread, 0, 0, "oni_client");
 		if (creationResult != 0)
 		{

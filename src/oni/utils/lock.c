@@ -7,7 +7,7 @@
 void spin_init(struct lock_t* lock)
 {
 	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
-	mtx_init(&lock->mutex, NULL, NULL, 0);
+	mtx_init(&lock->mutex, "oni logger lock", NULL, 0);
 }
 
 void spin_lock(struct lock_t *lock)

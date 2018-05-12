@@ -15,12 +15,18 @@
 #include <vm/pmap.h>
 #include <vm/vm_map.h>
 #include <vm/vm_param.h>
+#include <unistd.h>
+
+#include <oni/utils/cpu.h>
+#include <oni/utils/syscall.h>
 
 uint8_t* gUserBaseAddress = NULL;
 uint32_t gUserBaseSize = 0;
 void* gElevatedEntryPoint = NULL;
 
 void SelfElevateAndRunStage2();
+
+
 
 uint8_t SelfElevateAndRun(uint8_t* userlandPayload, uint32_t userlandSize, void(*elevatedEntryPoint)(void* arguments))
 {
@@ -34,7 +40,7 @@ uint8_t SelfElevateAndRun(uint8_t* userlandPayload, uint32_t userlandSize, void(
 	gElevatedEntryPoint = elevatedEntryPoint;
 
 	// TODO: kexec
-	//_kexec(SelfElevateAndRunStage2, NULL);
+	syscall1(11, SelfElevateAndRunStage2);
 
 	return true;
 }
@@ -51,6 +57,77 @@ void SelfElevateAndRunStage2()
 	void(*printf)(char *format, ...) = kdlsym(printf);
 	int(*kproc_create)(void(*func)(void*), void* arg, struct proc** newpp, int flags, int pages, const char* fmt, ...) = kdlsym(kproc_create);
 	vm_map_t map = (vm_map_t)(*(uint64_t *)(kdlsym(kernel_map)));
+
+	// Apply patches
+	critical_enter();
+	cpu_disable_wp();
+
+	// Verbose Panics
+	uint8_t *kmem = (uint8_t *)&gKernelBase[0x171517];
+	kmem[0] = 0x90; kmem[1] = 0x90; kmem[2] = 0x90; kmem[3] = 0x90;
+	kmem[4] = 0x90; kmem[5] = 0x65; kmem[6] = 0x8B; kmem[7] = 0x34;
+	kmem = (uint8_t *)&gKernelBase[0x11730];
+	kmem[0] = 0xB8; kmem[1] = 0x01; kmem[2] = 0x00; kmem[3] = 0x00;
+	kmem[4] = 0x00; kmem[5] = 0xC3; kmem[6] = 0x90; kmem[7] = 0x90;
+	kmem = (uint8_t *)&gKernelBase[0x11750];
+	kmem[0] = 0xB8; kmem[1] = 0x01; kmem[2] = 0x00; kmem[3] = 0x00;
+	kmem[4] = 0x00; kmem[5] = 0xC3; kmem[6] = 0x90; kmem[7] = 0x90;
+
+	// Enable rwx
+	kmem = (uint8_t*)&gKernelBase[0xFCC38];
+	kmem[0] = 0x07;
+	kmem = (uint8_t*)&gKernelBase[0xFCC46];
+	kmem[0] = 0x07;
+
+	// Patch copy(in/out)
+	uint16_t *copyinpatch = (uint16_t*)&gKernelBase[0x1EA657];
+	uint16_t *copyoutpatch = (uint16_t*)&gKernelBase[0x1EA572];
+
+	*copyinpatch = 0x9090;
+	*copyoutpatch = 0x9090;
+
+	// Enable MAP_SELF
+	kmem = (uint8_t*)&gKernelBase[0x117b0];
+	kmem[0] = 0xB8;
+	kmem[1] = 0x01;
+	kmem[2] = 0x00;
+	kmem[3] = 0x00;
+	kmem[4] = 0x00;
+	kmem[5] = 0xC3;
+	kmem = (uint8_t*)&gKernelBase[0x117c0];
+	kmem[0] = 0xB8;
+	kmem[1] = 0x01;
+	kmem[2] = 0x00;
+	kmem[3] = 0x00;
+	kmem[4] = 0x00;
+	kmem[5] = 0xC3;
+	kmem = (uint8_t*)&gKernelBase[0x13ef2f];
+	kmem[0] = 0x31;
+	kmem[1] = 0xC0;
+	kmem[2] = 0x90;
+	kmem[3] = 0x90;
+	kmem[4] = 0x90;
+
+	// Patch copyinstr
+	gKernelBase[0x001EAA83] = 0x90;
+	gKernelBase[0x001EAA84] = 0x90;
+
+	gKernelBase[0x001EAAB3] = 0x90;
+	gKernelBase[0x001EAAB4] = 0x90;
+
+	// Patch memcpy stack
+	gKernelBase[0x001EA42D] = 0xEB;
+
+	// ptrace patches
+	gKernelBase[0x0030D633] = 0x90;
+	gKernelBase[0x0030D633 + 1] = 0x90;
+	gKernelBase[0x0030D633 + 2] = 0x90;
+	gKernelBase[0x0030D633 + 3] = 0x90;
+	gKernelBase[0x0030D633 + 4] = 0x90;
+	gKernelBase[0x0030D633 + 5] = 0x90;
+
+	cpu_enable_wp();
+	crtical_exit();
 
 	// We currently are in kernel context, executing userland memory
 	if (!gUserBaseAddress || !gUserBaseSize || !gElevatedEntryPoint)
@@ -74,7 +151,6 @@ void SelfElevateAndRunStage2()
 		return;
 
 	printf("[+] Pre-faulting user memory %p %x\n", 0x926100000, 0x200000);
-	//mlock((void*)0x926100000, 0x200000);
 	mlockall(1);
 
 	printf("[+] Pre-faulting kernel memory %p %x\n", kernelPayload, gUserBaseSize);

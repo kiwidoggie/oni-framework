@@ -8,6 +8,14 @@
 
 #if ONI_PLATFORM==ONI_UNKNOWN_PLATFORM
 #include "kdlsym/default.h"
+#elif ONI_PLATFORM==ONI_PLATFORM_ORBIS_BSD
+#include "kdlsym/orbis.h"
+#elif ONI_PLATFORM==ONI_PLATFORM_ORBIS_BSD_455
+#include "kdlsym/orbis455.h"
+#elif ONI_PLATFORM==ONI_PLATFORM_ORBIS_BSD_501
+#include "kdlsym/orbis501.h"
+#elif ONI_PLATFORM==ONI_PLATFORM_ORBIS_BSD_505
+#include "kdlsym/orbis505.h"
 #elif ONI_PLATFORM==ONI_PLATFORM_SAFE_BSD
 #include "kdlsym/gunsafe2.h"
 #endif

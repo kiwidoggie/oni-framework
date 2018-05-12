@@ -2,10 +2,24 @@
 
 // 64-bit ARM FreeBSD based device
 #define ONI_PLATFORM_AARCH64_BSD	1
-#define ONI_PS4_PLATFORM			2
+
+// 64-bit x64 FreeBSD orbis based device
+#define ONI_PLATFORM_ORBIS_BSD		2
+
+// 64-bit x64 FreeBSD 9 based device
+#define ONI_PLATFORM_9_BSD			3
 
 // 32-bit ARM FreeBSD based device
-#define ONI_PLATFORM_SAFE_BSD		2
+#define ONI_PLATFORM_SAFE_BSD		4
+
+// 4.55 Orbis Firmware
+#define ONI_PLATFORM_ORBIS_BSD_455	5
+
+// 5.05 Orbis Firmware
+#define ONI_PLATFORM_ORBIS_BSD_501	6
+
+// 5.05 Orbis Firmware
+#define ONI_PLATFORM_ORBIS_BSD_505	7
 
 // Unknown device
 #define ONI_UNKNOWN_PLATFORM		-1
@@ -17,7 +31,7 @@
 
 // The current platform configured by oni
 #ifndef ONI_PLATFORM
-#define ONI_PLATFORM ONI_UNKNOWN_PLATFORM
+#define ONI_PLATFORM ONI_PLATFORM_ORBIS_BSD_501
 #endif
 
 // The maximum number of plugins for use with oni

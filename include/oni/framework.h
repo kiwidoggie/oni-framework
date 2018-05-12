@@ -19,6 +19,9 @@ struct framework_t
 	struct pluginmanager_t* pluginManager;
 };
 
+// Framework platform
+extern struct framework_t* gFramework;
+
 // Initialization parameters
 extern struct initparams_t* gInitParams;
 

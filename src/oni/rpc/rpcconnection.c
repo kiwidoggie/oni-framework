@@ -8,7 +8,7 @@
 #include <oni/utils/log/logger.h>
 #include <oni/utils/sys_wrappers.h>
 
-extern struct messagemanager_t* gMessageManager;
+#include <oni/framework.h>
 
 void rpcconnection_init(struct rpcconnection_t* connection)
 /*
@@ -106,7 +106,6 @@ void rpcconnection_serverThread(void* data)
 	}
 
 	struct rpcconnection_t* connection = (struct rpcconnection_t*)data;
-
 	// Initialize all of the buffers
 	WriteLog(LL_Debug, "rpcconnection_serverThread init buffers");
 	if (!rpcconnection_initializeBuffers(connection))
@@ -233,10 +232,10 @@ void rpcconnection_serverThread(void* data)
 
 		}
 		
-		WriteLog(LL_Debug, "dispatching message %p %p", gMessageManager, allocation);
+		WriteLog(LL_Debug, "dispatching message %p %p", gFramework->messageManager, allocation);
 
 		// Now that we have the full message chunk, parse the category and the type and get it the fuck outa here
-		messagemanager_sendMessage(gMessageManager, allocation);
+		messagemanager_sendMessage(gFramework->messageManager, allocation);
 
 		__dec(allocation);
 	}

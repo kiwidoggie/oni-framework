@@ -60,6 +60,8 @@ struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* ma
 	if (!manager)
 		return 0;
 
+	//WriteLog(LL_Debug, "[+] got dispatcher %p category: %d", manager, category);
+
 	if (category >= RPCCAT_COUNT)
 		return 0;
 
@@ -120,11 +122,12 @@ int32_t messagemanager_registerCallback(struct messagemanager_t* manager, uint32
 		return 0;
 
 	// Install the listener to the category
+	//category->callbacks[callbackIndex] = callback;
 	struct messagecategory_callback_t* categoryCallback = (struct messagecategory_callback_t*)kmalloc(sizeof(struct messagecategory_callback_t));
 	if (!categoryCallback)
 		return 0;
 
-	categoryCallback->type = callbackType; // Set type
+	categoryCallback->type = callbackType; // TODO: Set type
 	categoryCallback->callback = callback;
 
 	category->callbacks[callbackIndex] = categoryCallback;
@@ -156,11 +159,15 @@ void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocat
 		goto cleanup;
 	}
 
+	//WriteLog(LL_Debug, "[+] sendMessage dispatcher: %p ref: %p message: %p", manager, msg, message);
+
 	if (message->header.category >= RPCCAT_COUNT)
 	{
 		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->header.category, RPCCAT_COUNT);
 		goto cleanup;
 	}
+
+	//WriteLog(LL_Debug, "[+] getting dispatcher category");
 
 	struct messagecategory_t* category = messagemanager_getCategory(manager, message->header.category);
 	if (!category)
@@ -170,6 +177,7 @@ void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocat
 	}
 
 	// Iterate through all of the callbacks
+	//WriteLog(LL_Debug, "[+] iterating callbacks");
 	for (uint32_t l_CallbackIndex = 0; l_CallbackIndex < RPCCATEGORY_MAX_CALLBACKS; ++l_CallbackIndex)
 	{
 		// Get the category callback structure
