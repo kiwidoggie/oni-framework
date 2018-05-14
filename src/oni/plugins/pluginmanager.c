@@ -62,7 +62,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 	if (!manager)
 	{
 		WriteLog(LL_Error, "no manager");
-		return 0;
+		return false;
 	}
 
 
@@ -70,7 +70,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 	if (pluginIndex == -1)
 	{
 		WriteLog(LL_Error, "no free indices");
-		return 0;
+		return false;
 	}
 
 
@@ -91,7 +91,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 	if (pluginExists)
 	{
 		WriteLog(LL_Error, "plugin exists");
-		return 0;
+		return false;
 	}
 
 	// Assign our plugin
@@ -100,11 +100,11 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 	// TODO: Make auto-loading configurable
 	WriteLog(LL_Debug, "loading plugin: %s", plugin->name);
 
-	int32_t initResult = plugin->plugin_init(0);
-	if (!initResult)
-		return 0;
+	uint8_t pluginLoadResult = plugin->plugin_load(plugin);
+	if (!pluginLoadResult)
+		return false;
 
-	return 1;
+	return true;
 }
 
 int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct plugin_t* plugin)
@@ -113,12 +113,14 @@ int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct p
 	{
 		if (manager->plugins[i] == plugin)
 		{
-			pluginmanager_unregisterPlugin(manager, manager->plugins[i]);
-			return 1;
+			// Unload the plugin
+			plugin->plugin_unload(plugin);
+			manager->plugins[i] = NULL;
+			return true;
 		}
 	}
 
-	return 0;
+	return false;
 }
 
 void pluginmanager_shutdown(struct pluginmanager_t* manager)
@@ -126,7 +128,7 @@ void pluginmanager_shutdown(struct pluginmanager_t* manager)
 	spin_lock(&manager->lock);
 	for (uint64_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
 	{
-		if (manager->plugins[i] == 0)
+		if (manager->plugins[i] == NULL)
 			continue;
 
 		pluginmanager_unregisterPlugin(manager, manager->plugins[i]);

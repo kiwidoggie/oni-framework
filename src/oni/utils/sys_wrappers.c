@@ -581,6 +581,51 @@ int kdup2(int oldd, int newd)
 	return td->td_retval[0];
 }
 
+int kmkdir(char * path, int mode)
+{
+	int(*sys_mkdir)(struct thread *, struct mkdir_args *) = kdlsym(sys_mkdir);
+
+	int error;
+	struct mkdir_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.path = path;
+	uap.mode = mode;
+
+	error = sys_mkdir(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
+int krmdir(char * path)
+{
+	int(*sys_rmdir)(struct thread *, struct rmdir_args *) = kdlsym(sys_rmdir);
+
+	int error;
+	struct rmdir_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.path = path;
+
+	error = sys_rmdir(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
 int kshutdown(int s, int how)
 {
 	int(*sys_shutdown)(struct thread *, struct shutdown_args *) = kdlsym(sys_shutdown);

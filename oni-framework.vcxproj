@@ -74,6 +74,7 @@
     <ClInclude Include="include\oni\utils\kdlsym.h" />
     <ClInclude Include="include\oni\utils\kdlsym\default.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
+    <ClInclude Include="include\oni\utils\kdlsym\orbis505.h" />
     <ClInclude Include="include\oni\utils\kernel.h" />
     <ClInclude Include="include\oni\utils\lock.h" />
     <ClInclude Include="include\oni\utils\log\logger.h" />
@@ -98,6 +99,7 @@
     <ClCompile Include="src\oni\utils\sys_wrappers.c" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="link.x" />
     <None Include="Makefile" />
     <None Include="README.md" />
     <None Include="src\oni\utils\memory\syscall.s" />

@@ -33,6 +33,9 @@ extern int kkill(int pid, int signum);
 extern int kdup2(int oldd, int newd);
 extern int kshutdown(int s, int how);
 
+extern int kmkdir(char* path, int mode);
+extern int krmdir(char* path);
+
 extern off_t klseek(int fd, off_t offset, int whence);
 extern caddr_t kmmap(caddr_t addr, size_t len, int prot, int flags, int fd, off_t pos);
 extern int kmunmap(void *addr, size_t len);

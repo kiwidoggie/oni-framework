@@ -7,12 +7,12 @@
 // Plugin description length
 #define PLUGIN_DESC_LEN		256
 
+struct plugin_t
 /*
 	plugin_t
 
 	Plugin structure that all plugins should "inherit" from
 */
-struct plugin_t
 {
 	// Name of the plugin
 	const char* name;
@@ -21,8 +21,20 @@ struct plugin_t
 	const char* description;
 
 	// Plugin initialization prototype
-	int32_t(*plugin_init)(void* arg);
+	uint8_t(*plugin_load)(void* plugin);
 
 	// Plugin close prototype
-	int32_t(*plugin_close)();
+	uint8_t(*plugin_unload)(void* plugin);
+};
+
+struct plugininit_t
+/*
+	plugininit_t
+
+	This structure is used for passing "host" information to the plugins to use
+*/
+{
+	struct framework_t* framework;
+	struct logger_t* logger;
+	uint8_t* kernelBase;
 };
