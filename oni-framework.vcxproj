@@ -80,6 +80,7 @@
     <ClInclude Include="include\oni\utils\log\logger.h" />
     <ClInclude Include="include\oni\utils\memory\allocator.h" />
     <ClInclude Include="include\oni\utils\memory\install.h" />
+    <ClInclude Include="include\oni\utils\patches.h" />
     <ClInclude Include="include\oni\utils\syscall.h" />
     <ClInclude Include="include\oni\utils\sys_wrappers.h" />
     <ClInclude Include="include\oni\utils\types.h" />

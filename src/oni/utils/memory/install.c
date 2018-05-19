@@ -4,6 +4,7 @@
 #include <oni/init/initparams.h>
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/memory/allocator.h>
+#include <oni/utils/patches.h>
 
 #include <sys/types.h>
 #include <sys/unistd.h>
@@ -62,69 +63,7 @@ void SelfElevateAndRunStage2()
 	critical_enter();
 	cpu_disable_wp();
 
-	// Verbose Panics
-	uint8_t *kmem = (uint8_t *)&gKernelBase[0x171517];
-	kmem[0] = 0x90; kmem[1] = 0x90; kmem[2] = 0x90; kmem[3] = 0x90;
-	kmem[4] = 0x90; kmem[5] = 0x65; kmem[6] = 0x8B; kmem[7] = 0x34;
-	kmem = (uint8_t *)&gKernelBase[0x11730];
-	kmem[0] = 0xB8; kmem[1] = 0x01; kmem[2] = 0x00; kmem[3] = 0x00;
-	kmem[4] = 0x00; kmem[5] = 0xC3; kmem[6] = 0x90; kmem[7] = 0x90;
-	kmem = (uint8_t *)&gKernelBase[0x11750];
-	kmem[0] = 0xB8; kmem[1] = 0x01; kmem[2] = 0x00; kmem[3] = 0x00;
-	kmem[4] = 0x00; kmem[5] = 0xC3; kmem[6] = 0x90; kmem[7] = 0x90;
-
-	// Enable rwx
-	kmem = (uint8_t*)&gKernelBase[0xFCC38];
-	kmem[0] = 0x07;
-	kmem = (uint8_t*)&gKernelBase[0xFCC46];
-	kmem[0] = 0x07;
-
-	// Patch copy(in/out)
-	uint16_t *copyinpatch = (uint16_t*)&gKernelBase[0x1EA657];
-	uint16_t *copyoutpatch = (uint16_t*)&gKernelBase[0x1EA572];
-
-	*copyinpatch = 0x9090;
-	*copyoutpatch = 0x9090;
-
-	// Enable MAP_SELF
-	kmem = (uint8_t*)&gKernelBase[0x117b0];
-	kmem[0] = 0xB8;
-	kmem[1] = 0x01;
-	kmem[2] = 0x00;
-	kmem[3] = 0x00;
-	kmem[4] = 0x00;
-	kmem[5] = 0xC3;
-	kmem = (uint8_t*)&gKernelBase[0x117c0];
-	kmem[0] = 0xB8;
-	kmem[1] = 0x01;
-	kmem[2] = 0x00;
-	kmem[3] = 0x00;
-	kmem[4] = 0x00;
-	kmem[5] = 0xC3;
-	kmem = (uint8_t*)&gKernelBase[0x13ef2f];
-	kmem[0] = 0x31;
-	kmem[1] = 0xC0;
-	kmem[2] = 0x90;
-	kmem[3] = 0x90;
-	kmem[4] = 0x90;
-
-	// Patch copyinstr
-	gKernelBase[0x001EAA83] = 0x90;
-	gKernelBase[0x001EAA84] = 0x90;
-
-	gKernelBase[0x001EAAB3] = 0x90;
-	gKernelBase[0x001EAAB4] = 0x90;
-
-	// Patch memcpy stack
-	gKernelBase[0x001EA42D] = 0xEB;
-
-	// ptrace patches
-	gKernelBase[0x0030D633] = 0x90;
-	gKernelBase[0x0030D633 + 1] = 0x90;
-	gKernelBase[0x0030D633 + 2] = 0x90;
-	gKernelBase[0x0030D633 + 3] = 0x90;
-	gKernelBase[0x0030D633 + 4] = 0x90;
-	gKernelBase[0x0030D633 + 5] = 0x90;
+	oni_installPrePatches();
 
 	cpu_enable_wp();
 	crtical_exit();

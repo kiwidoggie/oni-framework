@@ -31,7 +31,7 @@
 
 // The current platform configured by oni
 #ifndef ONI_PLATFORM
-#define ONI_PLATFORM ONI_PLATFORM_ORBIS_BSD_501
+#define ONI_PLATFORM ONI_PLATFORM_ORBIS_BSD_505
 #endif
 
 // The maximum number of plugins for use with oni
