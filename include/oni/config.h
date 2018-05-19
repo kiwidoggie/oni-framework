@@ -15,7 +15,7 @@
 // 4.55 Orbis Firmware
 #define ONI_PLATFORM_ORBIS_BSD_455	5
 
-// 5.05 Orbis Firmware
+// 5.01 Orbis Firmware
 #define ONI_PLATFORM_ORBIS_BSD_501	6
 
 // 5.05 Orbis Firmware
@@ -31,7 +31,7 @@
 
 // The current platform configured by oni
 #ifndef ONI_PLATFORM
-#define ONI_PLATFORM ONI_PLATFORM_ORBIS_BSD_505
+#define ONI_PLATFORM ONI_PLATFORM_ORBIS_BSD_501
 #endif
 
 // The maximum number of plugins for use with oni

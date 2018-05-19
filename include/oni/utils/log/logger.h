@@ -36,7 +36,7 @@ struct logger_t
 	char finalBuffer[Logger_MaxBuffer];
 
 	// Handle to log file on hdd
-	volatile volatile int logHandle;
+	volatile int logHandle;
 
 	struct lock_t lock;
 

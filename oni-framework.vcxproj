@@ -71,6 +71,7 @@
     <ClInclude Include="include\oni\rpc\rpcconnection.h" />
     <ClInclude Include="include\oni\rpc\rpcserver.h" />
     <ClInclude Include="include\oni\utils\cpu.h" />
+    <ClInclude Include="include\oni\utils\dynlib.h" />
     <ClInclude Include="include\oni\utils\kdlsym.h" />
     <ClInclude Include="include\oni\utils\kdlsym\default.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
@@ -92,6 +93,7 @@
     <ClCompile Include="src\oni\plugins\pluginmanager.c" />
     <ClCompile Include="src\oni\rpc\rpcconnection.c" />
     <ClCompile Include="src\oni\rpc\rpcserver.c" />
+    <ClCompile Include="src\oni\utils\dynlib.c" />
     <ClCompile Include="src\oni\utils\kdlsym.c" />
     <ClCompile Include="src\oni\utils\lock.c" />
     <ClCompile Include="src\oni\utils\log\logger.c" />
