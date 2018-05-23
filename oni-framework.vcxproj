@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{73d88a70-8f6f-49a7-b921-9db254527f92}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>oni_framework</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{2238F9CD-F817-4ECC-BD14-2524D2669B35}</LinuxProjectType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <ConfigurationType>Makefile</ConfigurationType>
+    <RemoteRootDir>~/mira/Firmware/Dependencies</RemoteRootDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <ConfigurationType>Makefile</ConfigurationType>
+    <RemoteRootDir>~/mira/Firmware/Dependencies</RemoteRootDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
+    <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
+    <NMakePreprocessorDefinitions>_KERNEL;_DEBUG</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
+    <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
+    <NMakePreprocessorDefinitions>_KERNEL</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
+    <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClInclude Include="include\oni\config.h" />
+    <ClInclude Include="include\oni\framework.h" />
+    <ClInclude Include="include\oni\init\framework.h" />
+    <ClInclude Include="include\oni\init\initparams.h" />
+    <ClInclude Include="include\oni\messaging\message.h" />
+    <ClInclude Include="include\oni\messaging\messagecategory.h" />
+    <ClInclude Include="include\oni\messaging\messagemanager.h" />
+    <ClInclude Include="include\oni\plugins\plugin.h" />
+    <ClInclude Include="include\oni\plugins\pluginmanager.h" />
+    <ClInclude Include="include\oni\rpc\rpcconnection.h" />
+    <ClInclude Include="include\oni\rpc\rpcserver.h" />
+    <ClInclude Include="include\oni\utils\cpu.h" />
+    <ClInclude Include="include\oni\utils\dynlib.h" />
+    <ClInclude Include="include\oni\utils\kdlsym.h" />
+    <ClInclude Include="include\oni\utils\kdlsym\default.h" />
+    <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
+    <ClInclude Include="include\oni\utils\kdlsym\orbis505.h" />
+    <ClInclude Include="include\oni\utils\kernel.h" />
+    <ClInclude Include="include\oni\utils\lock.h" />
+    <ClInclude Include="include\oni\utils\log\logger.h" />
+    <ClInclude Include="include\oni\utils\memory\allocator.h" />
+    <ClInclude Include="include\oni\utils\memory\install.h" />
+    <ClInclude Include="include\oni\utils\patches.h" />
+    <ClInclude Include="include\oni\utils\syscall.h" />
+    <ClInclude Include="include\oni\utils\sys_wrappers.h" />
+    <ClInclude Include="include\oni\utils\types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\oni\messaging\message.c" />
+    <ClCompile Include="src\oni\messaging\messagecategory.c" />
+    <ClCompile Include="src\oni\messaging\messagemanager.c" />
+    <ClCompile Include="src\oni\plugins\pluginmanager.c" />
+    <ClCompile Include="src\oni\rpc\rpcconnection.c" />
+    <ClCompile Include="src\oni\rpc\rpcserver.c" />
+    <ClCompile Include="src\oni\utils\dynlib.c" />
+    <ClCompile Include="src\oni\utils\kdlsym.c" />
+    <ClCompile Include="src\oni\utils\lock.c" />
+    <ClCompile Include="src\oni\utils\log\logger.c" />
+    <ClCompile Include="src\oni\utils\memory\allocator.c" />
+    <ClCompile Include="src\oni\utils\memory\install.c" />
+    <ClCompile Include="src\oni\utils\sys_wrappers.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="link.x" />
+    <None Include="Makefile" />
+    <None Include="README.md" />
+    <None Include="src\oni\utils\memory\syscall.s" />
+    <None Include="src\oni\utils\utils.s" />
+  </ItemGroup>
+  <ItemDefinitionGroup />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>
