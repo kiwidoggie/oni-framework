@@ -71,7 +71,7 @@ $(TARGET): $(ALL_OBJ)
 
 $(OUT_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "Compiling $< ..."
-	$(CC) $(CFLAGS) $(IDIRS) -c $< -o $@
+	@$(CC) $(CFLAGS) $(IDIRS) -c $< -o $@
 
 $(OUT_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp	
 	@echo "Compiling $< ..."
