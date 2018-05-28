@@ -2,7 +2,7 @@
 #include <oni/plugins/plugin.h>
 
 #include <oni/utils/lock.h>
-#include <oni/utils/log/logger.h>
+#include <oni/utils/logger.h>
 
 void pluginmanager_init(struct pluginmanager_t* manager)
 {
@@ -10,8 +10,8 @@ void pluginmanager_init(struct pluginmanager_t* manager)
 		return;
 
 	// Zero out our plugin table
-	for (uint32_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
-		manager->plugins[i] = 0;
+	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
+		manager->plugins[i] = NULL;
 
 	spin_init(&manager->lock);
 }
@@ -24,7 +24,7 @@ int32_t pluginmanager_findFreePluginIndex(struct pluginmanager_t* manager)
 	int32_t pluginIndex = -1;
 
 	spin_lock(&manager->lock);
-	for (uint32_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
+	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (!manager->plugins[i])
 		{
@@ -45,7 +45,7 @@ uint32_t pluginmanager_pluginCount(struct pluginmanager_t* manager)
 	uint32_t count = 0;
 
 	spin_lock(&manager->lock);
-	for (uint32_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
+	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i])
 			count++;
@@ -78,7 +78,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 
 	// Verify that this plugin isn't already loaded
 	spin_lock(&manager->lock);
-	for (uint32_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
+	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == plugin)
 		{
@@ -100,7 +100,8 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 	// TODO: Make auto-loading configurable
 	WriteLog(LL_Debug, "loading plugin: %s", plugin->name);
 
-	uint8_t pluginLoadResult = plugin->plugin_load(plugin);
+	// Bugcheck?
+	uint8_t pluginLoadResult = plugin->plugin_load ? plugin->plugin_load(plugin) : false;
 	if (!pluginLoadResult)
 		return false;
 
@@ -109,12 +110,13 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 
 int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct plugin_t* plugin)
 {
-	for (uint64_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
+	for (uint64_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == plugin)
 		{
 			// Unload the plugin
-			plugin->plugin_unload(plugin);
+			if (plugin->plugin_unload) // Bugcheck?
+				plugin->plugin_unload(plugin);
 			manager->plugins[i] = NULL;
 			return true;
 		}
@@ -126,7 +128,7 @@ int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct p
 void pluginmanager_shutdown(struct pluginmanager_t* manager)
 {
 	spin_lock(&manager->lock);
-	for (uint64_t i = 0; i < PLUGINMANAGER_MAX_PLUGINS; ++i)
+	for (uint64_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == NULL)
 			continue;

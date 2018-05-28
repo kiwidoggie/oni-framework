@@ -1,4 +1,4 @@
-#include <oni/utils/log/logger.h>
+#include <oni/utils/logger.h>
 #include <stdarg.h>
 #include <oni/utils/kdlsym.h>
 #include <oni/utils/sys_wrappers.h>

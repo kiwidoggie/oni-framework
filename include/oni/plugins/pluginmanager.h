@@ -14,7 +14,7 @@ struct plugin_t;
 struct pluginmanager_t
 {
 	// Plugins list
-	struct plugin_t* plugins[PLUGINMANAGER_MAX_PLUGINS];
+	struct plugin_t* plugins[PLUGINMANAGER_MAX_PLUGINS]; // TODO: Make this dynamically allocated
 
 	// Lock
 	struct lock_t lock;

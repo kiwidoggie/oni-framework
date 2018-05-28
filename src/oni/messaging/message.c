@@ -5,7 +5,7 @@
 #include <oni/messaging/message.h>
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/memory/allocator.h>
-#include <oni/utils/log/logger.h>
+#include <oni/utils/logger.h>
 
 // Local messages will have socket of -1
 void message_init(struct message_t* message, int32_t socket)

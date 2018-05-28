@@ -47,7 +47,7 @@
 #define ONI_LOG_BUFFER_SIZE	0x1000
 #define ONI_BASE_PATH "/user/oni"
 #define RPC_SLEEP "rpc sleep"
-#define DEFAULT_AGENT_PORT 9999
+#define ONI_RPC_PORT 9999
 #else
 #define ONI_THREAD_NAME	""
 #define ONI_LOG_BUFFER_SIZE	0x100

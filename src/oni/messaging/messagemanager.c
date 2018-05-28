@@ -3,7 +3,7 @@
 #include <oni/messaging/message.h>
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/memory/allocator.h>
-#include <oni/utils/log/logger.h>
+#include <oni/utils/logger.h>
 
 void __dec(struct allocation_t* allocation);
 

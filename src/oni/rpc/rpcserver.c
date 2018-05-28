@@ -4,7 +4,7 @@
 #include <oni/config.h>
 
 #include <oni/utils/memory/allocator.h>
-#include <oni/utils/log/logger.h>
+#include <oni/utils/logger.h>
 #include <oni/utils/sys_wrappers.h>
 
 #include <sys/socket.h>
@@ -254,7 +254,7 @@ void rpcserver_serverThread(void* data)
 int32_t rpcserver_shutdown(struct rpcserver_t* server)
 {
 	if (!server)
-		return 0;
+		return false;
 
 	server->isRunning = 0;
 
@@ -273,7 +273,7 @@ int32_t rpcserver_shutdown(struct rpcserver_t* server)
 	// Zero address space
 	kmemset(&server->address, 0, sizeof(server->address));
 
-	return 1;
+	return true;
 }
 
 int32_t rpcserver_findClientIndex(struct rpcserver_t* server, struct rpcconnection_t* clientConnection)

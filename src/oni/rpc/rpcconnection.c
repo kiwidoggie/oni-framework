@@ -5,7 +5,7 @@
 #include <oni/messaging/messagemanager.h>
 
 #include <oni/utils/memory/allocator.h>
-#include <oni/utils/log/logger.h>
+#include <oni/utils/logger.h>
 #include <oni/utils/sys_wrappers.h>
 
 #include <oni/framework.h>
