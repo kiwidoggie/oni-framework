@@ -85,4 +85,6 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sys_kill				0xDEADC0DE
 #define kdlsym_addr_sys_mkdir				0xDEADC0DE
 #define kdlsym_addr_sys_rmdir				0xDEADC0DE
+
+#define kdlsym_addr_eventhandler_register	0xDEADC0DE
 #endif
