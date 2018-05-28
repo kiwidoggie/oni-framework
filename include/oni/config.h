@@ -1,25 +1,30 @@
 #pragma once
 
-// 64-bit ARM FreeBSD based device
-#define ONI_PLATFORM_AARCH64_BSD	1
+// Set our default definitions for each used version number
 
-// 64-bit x64 FreeBSD orbis based device
-#define ONI_PLATFORM_ORBIS_BSD		2
+#define ONI_PLATFORM_ORBIS_BSD_176	176
 
-// 64-bit x64 FreeBSD 9 based device
-#define ONI_PLATFORM_9_BSD			3
+#define ONI_PLATFORM_ORBIS_BSD_355	355
 
-// 32-bit ARM FreeBSD based device
-#define ONI_PLATFORM_SAFE_BSD		4
+#define ONI_PLATFORM_ORBIS_BSD_400	400
 
-// 4.55 Orbis Firmware
-#define ONI_PLATFORM_ORBIS_BSD_455	5
+#define ONI_PLATFORM_ORBIS_BSD_405	405
 
-// 5.01 Orbis Firmware
-#define ONI_PLATFORM_ORBIS_BSD_501	6
+#define ONI_PLATFORM_ORBIS_BSD_407	407
 
-// 5.05 Orbis Firmware
-#define ONI_PLATFORM_ORBIS_BSD_505	7
+#define ONI_PLATFORM_ORBIS_BSD_455	455
+
+#define ONI_PLATFORM_ORBIS_BSD_500	500
+
+#define ONI_PLATFORM_ORBIS_BSD_501	501
+
+#define ONI_PLATFORM_ORBIS_BSD_505	505
+
+#define ONI_PLATFORM_ORBIS_BSD_550	550
+
+#define ONI_PLATFORM_ORBIS_BSD_553	553
+
+#define ONI_PLATFORM_ORBIS_BSD_555	555
 
 // Unknown device
 #define ONI_UNKNOWN_PLATFORM		-1
@@ -31,7 +36,7 @@
 
 // The current platform configured by oni
 #ifndef ONI_PLATFORM
-#define ONI_PLATFORM ONI_PLATFORM_ORBIS_BSD_501
+#error ONI_PLATFORM environment variable not set
 #endif
 
 // The maximum number of plugins for use with oni

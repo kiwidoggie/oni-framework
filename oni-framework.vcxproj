@@ -40,10 +40,10 @@
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
-    <NMakePreprocessorDefinitions>_KERNEL;_DEBUG</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505;_DEBUG</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
-    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make</RemoteReBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteReBuildCommandLine>
     <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
@@ -51,10 +51,10 @@
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
-    <NMakePreprocessorDefinitions>_KERNEL</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505;</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
-    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make</RemoteReBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteReBuildCommandLine>
     <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
@@ -108,7 +108,16 @@
     <None Include="src\oni\utils\memory\syscall.s" />
     <None Include="src\oni\utils\utils.s" />
   </ItemGroup>
-  <ItemDefinitionGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PreBuildEvent>
+      <AdditionalSourcesToCopyMapping>$(ProjectDir)..\..\..\Scripts\init_development_environment.sh:=$(RemoteProjectDir)/../../../Scripts/init_development_environment.sh;%(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <AdditionalSourcesToCopyMapping>$(ProjectDir)..\..\..\Scripts\init_development_environment.sh:=$(RemoteProjectDir)/../../../Scripts/init_development_environment.sh;%(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

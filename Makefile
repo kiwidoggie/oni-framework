@@ -27,7 +27,7 @@ endif
 SRC_DIR	:=	src
 
 # Include directory paths
-I_DIRS	:=	-I. -Iinclude -I$(SRC_DIR) -I$(BSD_INC) -Idepends/include
+I_DIRS	:=	-I. -Iinclude -I$(SRC_DIR) -I"$(BSD_INC)" -Idepends/include
 
 # Library directory paths
 L_DIRS	:=	-L.	-Llib
@@ -36,7 +36,7 @@ L_DIRS	:=	-L.	-Llib
 LIBS	:= 
 
 # C++ Flags
-CFLAGS	:= $(I_DIRS) -D_KERNEL -D_DEBUG -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
+CFLAGS	:= $(I_DIRS) -D_KERNEL=1 -D_DEBUG -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
 
 # Assembly flags
 SFLAGS	:= -nostartfiles -nodefaultlibs -nostdlib -fPIC
@@ -65,12 +65,13 @@ ALL_OBJ := $(ALL_OBJ_C:.s=.o)
 TARGET = $(PROJ_NAME).a
 
 $(TARGET): $(ALL_OBJ)
+	@echo "Building for Firmware $(ONI_PLATFORM)...";
 	@echo Compiling $(PROJ_NAME)...
 	@$(AS) rcs $(TARGET) $(ALL_OBJ)
 
 $(OUT_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "Compiling $< ..."
-	@$(CC) $(CFLAGS) $(IDIRS) -c $< -o $@
+	$(CC) $(CFLAGS) $(IDIRS) -c $< -o $@
 
 $(OUT_DIR)/$(SRC_DIR)/%.o: $(SRC_DIR)/%.cpp	
 	@echo "Compiling $< ..."

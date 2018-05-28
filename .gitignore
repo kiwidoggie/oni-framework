@@ -30,3 +30,9 @@ _ReSharper*/
 .vs/
 #Nuget packages folder
 packages/
+# Ignore binary files
+*.bin
+*.elf
+*.o
+*.a
+*.so
