@@ -110,6 +110,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 
 int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct plugin_t* plugin)
 {
+	spin_lock(&manager->lock);
 	for (uint64_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == plugin)
@@ -118,16 +119,16 @@ int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct p
 			if (plugin->plugin_unload) // Bugcheck?
 				plugin->plugin_unload(plugin);
 			manager->plugins[i] = NULL;
+			spin_unlock(&manager->lock);
 			return true;
 		}
 	}
-
+	spin_unlock(&manager->lock);
 	return false;
 }
 
 void pluginmanager_shutdown(struct pluginmanager_t* manager)
 {
-	spin_lock(&manager->lock);
 	for (uint64_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == NULL)
@@ -135,5 +136,4 @@ void pluginmanager_shutdown(struct pluginmanager_t* manager)
 
 		pluginmanager_unregisterPlugin(manager, manager->plugins[i]);
 	}
-	spin_unlock(&manager->lock);
 }

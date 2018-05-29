@@ -28,5 +28,6 @@ int32_t messagemanager_findFreeCategoryIndex(struct messagemanager_t* manager);
 uint32_t messagemanager_freeCategoryCount(struct messagemanager_t* manager);
 struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* manager, uint32_t categoryId);
 int32_t messagemanager_registerCallback(struct messagemanager_t* manager, uint32_t callbackCategory, uint32_t callbackType, void* callback);
+int32_t messagemanager_unregisterCallback(struct messagemanager_t* manager, int32_t callbackCategory, int32_t callbackType, void* callback);
 
 void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocation_t* msg);

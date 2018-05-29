@@ -149,23 +149,35 @@ int32_t messagemanager_unregisterCallback(struct messagemanager_t* manager, int3
 	if (!category)
 		return false;
 
-	// Get the next free listener
-	int32_t callbackIndex = rpccategory_findFreeCallbackIndex(category);
-	if (callbackIndex == -1)
-		return 0;
+	for (uint32_t l_CallbackIndex = 0; l_CallbackIndex < ARRAYSIZE(category->callbacks); ++l_CallbackIndex)
+	{
+		// Get the category callback structure
+		struct messagecategory_callback_t* l_Callback = category->callbacks[l_CallbackIndex];
 
-	// Install the listener to the category
-	//category->callbacks[callbackIndex] = callback;
-	struct messagecategory_callback_t* categoryCallback = (struct messagecategory_callback_t*)kmalloc(sizeof(struct messagecategory_callback_t));
-	if (!categoryCallback)
-		return 0;
+		// Check to see if this callback is used at all
+		if (!l_Callback)
+			continue;
 
-	categoryCallback->type = callbackType; // TODO: Set type
-	categoryCallback->callback = callback;
+		// Check the type of the message
+		if (l_Callback->type != callbackType)
+			continue;
 
-	category->callbacks[callbackIndex] = categoryCallback;
+		// Check the callback
+		if (l_Callback->callback != callback)
+			continue;
 
-	return true;
+		// Remove from the list
+		category->callbacks[l_CallbackIndex] = NULL;
+
+		// Free the memory
+		kfree(l_Callback, sizeof(*l_Callback));
+
+		l_Callback = NULL;
+
+		return true;
+	}
+
+	return false;
 }
 
 void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocation_t* msg)
