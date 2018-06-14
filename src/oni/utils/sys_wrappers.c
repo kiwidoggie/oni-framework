@@ -1,6 +1,7 @@
-#include <oni/utils/sys_wrappers.h>
+﻿#include <oni/utils/sys_wrappers.h>
 #include <oni/utils/memory/allocator.h>
 #include <oni/utils/kdlsym.h>
+#include <oni/utils/hde/hde64.h>
 
 #include <sys/sysproto.h>
 #include <sys/pcpu.h>

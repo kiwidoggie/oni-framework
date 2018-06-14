@@ -40,7 +40,7 @@
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
-    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;_DEBUG</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;_STANDALONE_DEBUG</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
     <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
@@ -51,7 +51,7 @@
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
-    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;_STANDALONE</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
     <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
