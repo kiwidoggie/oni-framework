@@ -58,51 +58,34 @@ void rpcconnection_shutdown(struct rpcconnection_t* connection)
 	if (!connection)
 		return;
 
-	WriteLog(LL_Debug, "here %p", connection);
-
 	// Manually update the status, the thread should auto-terminate
 	connection->isRunning = FALSE;
-
-	WriteLog(LL_Debug, "here");
 
 	// If the socket is not invalid
 	if (connection->socket != -1)
 	{
-		WriteLog(LL_Debug, "here");
-
 		// Free the socket
 		kshutdown(connection->socket, 2);
 
-		WriteLog(LL_Debug, "here");
-
 		kclose(connection->socket);
-
-		WriteLog(LL_Debug, "here");
 		connection->socket = -1;
 	}
 
-	WriteLog(LL_Debug, "here");
 	// Stop the thread if it hasn't been already
 	if (connection->thread)
 	{
-		WriteLog(LL_Debug, "here");
 		// This stops the thread and waits for exit
 		kthread_stop(connection->thread);
 
-		WriteLog(LL_Debug, "here");
 		// Clear the thread
 		connection->thread = NULL;
 	}
 
-	WriteLog(LL_Debug, "here");
 	// Zero the buffer
 	kmemset(connection->buffer, 0, sizeof(connection->buffer));
 
-	WriteLog(LL_Debug, "here");
 	// Clear out the address information
 	kmemset(&connection->address, 0, sizeof(connection->address));
-
-	WriteLog(LL_Debug, "here");
 
 	// Invoke the onClientDisconnect handler on the server side to remove from the list and free this connection
 	if (connection->disconnect)
@@ -191,17 +174,17 @@ void rpcconnection_serverThread(void* data)
 			goto cleanup;
 		}
 			
+		// Check to see how much data we actually got
+		uint64_t totalDataSize = recvSize + header->payloadSize;
 
 		WriteLog(LL_Debug, "checking payload length\n");
 		// If the payload length is bigger than the maximum buffer size, then fail
-		if (header->payloadSize > ARRAYSIZE(connection->buffer))
+		if (totalDataSize > ARRAYSIZE(connection->buffer))
 		{
 			WriteLog(LL_Error, "payload length greater than buffer size.");
 			goto cleanup;
 		}
 
-		// Check to see how much data we actually got
-		uint64_t totalDataSize = recvSize + header->payloadSize;
 		WriteLog(LL_Debug, "total data size %lld", totalDataSize);
 		// Recv the payload
 		while (dataReceived < totalDataSize)

@@ -248,40 +248,30 @@ int32_t rpcserver_shutdown(struct rpcserver_t* server)
 	if (!server)
 		return false;
 
-	WriteLog(LL_Debug, "here %p", server);
-
 	server->isRunning = false;
-
-	WriteLog(LL_Debug, "here");
 
 	// Stop all connections
 	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
 		rpcconnection_shutdown(server->connections[i]);
 
-	WriteLog(LL_Debug, "here");
-
 	// Free all of the server bullshit
 	if (server->socket != -1)
 	{
-		WriteLog(LL_Debug, "here");
 		kshutdown(server->socket, 2);
-		WriteLog(LL_Debug, "here");
 		kclose(server->socket);
-		WriteLog(LL_Debug, "here");
 		server->socket = -1;
 	}
 
 	// This stops the thread and waits for exit
 	if (server->thread)
 	{
-		WriteLog(LL_Debug, "here");
 		kthread_stop(server->thread);
 		server->thread = NULL;
 	}
 
 	// Zero address space
 	kmemset(&server->address, 0, sizeof(server->address));
-	WriteLog(LL_Debug, "here");
+
 	return true;
 }
 
@@ -304,24 +294,16 @@ int32_t rpcserver_findClientIndex(struct rpcserver_t* server, struct rpcconnecti
 
 void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnection_t* clientConnection)
 {
-	WriteLog(LL_Debug, "here %p", clientConnection);
-
 	if (!server || !clientConnection)
 		return;
 
-	WriteLog(LL_Debug, "here");
-
 	// Remove the index
 	int32_t clientIndex = rpcserver_findClientIndex(server, clientConnection);
-	WriteLog(LL_Debug, "here clientIndex: %d", clientIndex);
 	if (clientIndex == -1)
 		return;
 
-	WriteLog(LL_Debug, "here");
-
 	// Remove it from our list
 	server->connections[clientIndex] = NULL;
-	WriteLog(LL_Debug, "here");
 
 	// Free the connection
 	kfree(clientConnection, sizeof(*clientConnection));
