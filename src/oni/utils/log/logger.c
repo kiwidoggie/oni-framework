@@ -8,7 +8,11 @@ void logger_init(struct logger_t* logger)
 	if (!logger)
 		return;
 
+#ifdef _DEBUG
 	logger->logLevel = LL_Debug;
+#else
+	logger->logLevel = LL_Error;
+#endif
 	logger->logHandle = -1;
 
 	kmemset(logger->buffer, 0, sizeof(logger->buffer));

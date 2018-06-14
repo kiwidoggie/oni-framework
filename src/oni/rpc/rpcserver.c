@@ -81,8 +81,6 @@ uint32_t rpcserver_freeClientCount(struct rpcserver_t* server)
 
 int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 {
-	utilUSleep(250, RPC_SLEEP);
-
 	WriteLog(LL_Debug, "entered rpcserver_startup.");
 	// Verify that our server object is valid
 	if (!server)
@@ -138,8 +136,6 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 		return 0;
 	}
 
-	utilUSleep(100, RPC_SLEEP);
-
 	int creationResult = kthread_add(rpcserver_serverThread, server, server->process, (struct thread**)&server->thread, 0, 0, "oni_rpcserver");
 	if (creationResult != 0)
 		return 0;
@@ -151,8 +147,6 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 
 void rpcserver_serverThread(void* data)
 {
-	utilUSleep(250, RPC_SLEEP);
-
 	WriteLog(LL_Debug, "entered serverThread.");
 
 	if (!data)
@@ -214,8 +208,6 @@ void rpcserver_serverThread(void* data)
 
 		WriteLog(LL_Debug, "found free rpc client.");
 
-		utilUSleep(100, RPC_SLEEP);
-
 		// Create the new client thread which will handle dispatching
 
 		int creationResult = kthread_add(rpcconnection_serverThread, clientConnection, server->process, (struct thread**)&clientConnection->thread, 0, 0, "oni_client");
@@ -262,10 +254,6 @@ int32_t rpcserver_shutdown(struct rpcserver_t* server)
 
 	WriteLog(LL_Debug, "here");
 
-	utilUSleep(300, RPC_SLEEP);
-
-	WriteLog(LL_Debug, "here");
-
 	// Stop all connections
 	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
 		rpcconnection_shutdown(server->connections[i]);
@@ -291,9 +279,6 @@ int32_t rpcserver_shutdown(struct rpcserver_t* server)
 		server->thread = NULL;
 	}
 
-	WriteLog(LL_Debug, "here");
-	utilUSleep(300, RPC_SLEEP);
-	WriteLog(LL_Debug, "here");
 	// Zero address space
 	kmemset(&server->address, 0, sizeof(server->address));
 	WriteLog(LL_Debug, "here");

@@ -40,10 +40,10 @@
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
-    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505;_DEBUG</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;_DEBUG</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
-    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteReBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
     <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
@@ -51,14 +51,15 @@
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</IntDir>
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
-    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505;</NMakePreprocessorDefinitions>
+    <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
-    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_505</RemoteReBuildCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
     <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
   <ItemGroup>
+    <ClInclude Include="include\oni\boot\patches.h" />
     <ClInclude Include="include\oni\config.h" />
     <ClInclude Include="include\oni\framework.h" />
     <ClInclude Include="include\oni\init\framework.h" />
@@ -72,6 +73,9 @@
     <ClInclude Include="include\oni\rpc\rpcserver.h" />
     <ClInclude Include="include\oni\utils\cpu.h" />
     <ClInclude Include="include\oni\utils\dynlib.h" />
+    <ClInclude Include="include\oni\utils\hde\hde64.h" />
+    <ClInclude Include="include\oni\utils\hde\table64.h" />
+    <ClInclude Include="include\oni\utils\hook.h" />
     <ClInclude Include="include\oni\utils\kdlsym.h" />
     <ClInclude Include="include\oni\utils\kdlsym\default.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
@@ -87,6 +91,9 @@
     <ClInclude Include="include\oni\utils\types.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\oni\boot\patches.c" />
+    <ClCompile Include="src\oni\boot\patches\patches501.c" />
+    <ClCompile Include="src\oni\boot\patches\patches505.c" />
     <ClCompile Include="src\oni\messaging\message.c" />
     <ClCompile Include="src\oni\messaging\messagecategory.c" />
     <ClCompile Include="src\oni\messaging\messagemanager.c" />
@@ -94,6 +101,8 @@
     <ClCompile Include="src\oni\rpc\rpcconnection.c" />
     <ClCompile Include="src\oni\rpc\rpcserver.c" />
     <ClCompile Include="src\oni\utils\dynlib.c" />
+    <ClCompile Include="src\oni\utils\hde\hde64.c" />
+    <ClCompile Include="src\oni\utils\hook.c" />
     <ClCompile Include="src\oni\utils\kdlsym.c" />
     <ClCompile Include="src\oni\utils\lock.c" />
     <ClCompile Include="src\oni\utils\log\logger.c" />

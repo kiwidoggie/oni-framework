@@ -3,6 +3,10 @@ ifeq ($(BSD_INC),)
 BSD_INC := ../freebsd-headers
 endif
 
+ifeq ($(HDE_INC),)
+HDE_INC := ../hde
+endif
+
 # Project name
 PROJ_NAME := OniFramework
 
@@ -27,7 +31,7 @@ endif
 SRC_DIR	:=	src
 
 # Include directory paths
-I_DIRS	:=	-I. -Iinclude -I$(SRC_DIR) -I"$(BSD_INC)" -Idepends/include
+I_DIRS	:=	-I. -Iinclude -I$(SRC_DIR) -I"$(BSD_INC)" -I"$(HDE_INC)" -Idepends/include
 
 # Library directory paths
 L_DIRS	:=	-L.	-Llib
@@ -36,7 +40,7 @@ L_DIRS	:=	-L.	-Llib
 LIBS	:= 
 
 # C++ Flags
-CFLAGS	:= $(I_DIRS) -D_KERNEL=1 -D_DEBUG -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
+CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
 
 # Assembly flags
 SFLAGS	:= -nostartfiles -nodefaultlibs -nostdlib -fPIC
