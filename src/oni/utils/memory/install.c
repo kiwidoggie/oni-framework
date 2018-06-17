@@ -58,6 +58,8 @@ void SelfElevateAndRunStage2()
 	void(*printf)(char *format, ...) = kdlsym(printf);
 	int(*kproc_create)(void(*func)(void*), void* arg, struct proc** newpp, int flags, int pages, const char* fmt, ...) = kdlsym(kproc_create);
 	vm_map_t map = (vm_map_t)(*(uint64_t *)(kdlsym(kernel_map)));
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
 
 	// Apply patches
 	critical_enter();
@@ -90,10 +92,10 @@ void SelfElevateAndRunStage2()
 		return;
 
 	printf("[+] Pre-faulting user memory %p %x\n", 0x926100000, 0x200000);
-	mlockall(1);
+	kmlockall(1);
 
 	printf("[+] Pre-faulting kernel memory %p %x\n", kernelPayload, gUserBaseSize);
-	mlock((void*)kernelPayload, gUserBaseSize);
+	kmlock((void*)kernelPayload, gUserBaseSize);
 
 	printf("[*] Kernel startup address %p\n", kernelStartup);
 
@@ -111,8 +113,8 @@ void SelfElevateAndRunStage2()
 	initParams->process = 0;
 
 	printf("[+] Copying payload from user-land\n");
-	kmemset(kernelPayload, 0, gUserBaseSize);
-	kmemcpy(kernelPayload, gUserBaseAddress, gUserBaseSize);
+	memset(kernelPayload, 0, gUserBaseSize);
+	memcpy(kernelPayload, gUserBaseAddress, gUserBaseSize);
 
 	printf("[*] Kernel payload peek: %02X %02X %02X %02X %02X\n", kernelPayload[0], kernelPayload[1], kernelPayload[2], kernelPayload[3], kernelPayload[4]);
 	printf("[*] Kernel oni_kernel_startup peek: %02X %02X %02X %02X %02X\n", kernelStartup[0], kernelStartup[1], kernelStartup[2], kernelStartup[3], kernelStartup[4]);

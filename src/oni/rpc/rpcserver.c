@@ -6,6 +6,7 @@
 #include <oni/utils/memory/allocator.h>
 #include <oni/utils/logger.h>
 #include <oni/utils/sys_wrappers.h>
+#include <oni/utils/kdlsym.h>
 
 #include <sys/socket.h>
 
@@ -81,6 +82,9 @@ uint32_t rpcserver_freeClientCount(struct rpcserver_t* server)
 
 int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 {
+	int(*kthread_add)(void(*func)(void*), void* arg, struct proc* procptr, struct thread** tdptr, int flags, int pages, const char* fmt, ...) = kdlsym(kthread_add);
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	WriteLog(LL_Debug, "entered rpcserver_startup.");
 	// Verify that our server object is valid
 	if (!server)
@@ -104,7 +108,7 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 	WriteLog(LL_Debug, "Socket Created: %d", server->socket);
 
 	// Set up the server address structure
-	kmemset(&server->address, 0, sizeof(server->address));
+	memset(&server->address, 0, sizeof(server->address));
 
 	server->address.sin_family = AF_INET;
 	server->address.sin_addr.s_addr = INADDR_ANY;
@@ -147,6 +151,9 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 
 void rpcserver_serverThread(void* data)
 {
+	void(*kthread_exit)(void) = kdlsym(kthread_exit);
+	int(*kthread_add)(void(*func)(void*), void* arg, struct proc* procptr, struct thread** tdptr, int flags, int pages, const char* fmt, ...) = kdlsym(kthread_add);
+
 	WriteLog(LL_Debug, "entered serverThread.");
 
 	if (!data)
@@ -245,6 +252,8 @@ void rpcserver_serverThread(void* data)
 
 int32_t rpcserver_shutdown(struct rpcserver_t* server)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	if (!server)
 		return false;
 
@@ -265,12 +274,12 @@ int32_t rpcserver_shutdown(struct rpcserver_t* server)
 	// This stops the thread and waits for exit
 	if (server->thread)
 	{
-		kthread_stop(server->thread);
+		//kthread_stop(server->thread);
 		server->thread = NULL;
 	}
 
 	// Zero address space
-	kmemset(&server->address, 0, sizeof(server->address));
+	memset(&server->address, 0, sizeof(server->address));
 
 	return true;
 }

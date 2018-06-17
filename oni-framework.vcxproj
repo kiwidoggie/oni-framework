@@ -104,6 +104,7 @@
     <ClCompile Include="src\oni\utils\hde\hde64.c" />
     <ClCompile Include="src\oni\utils\hook.c" />
     <ClCompile Include="src\oni\utils\kdlsym.c" />
+    <ClCompile Include="src\oni\utils\kernel.c" />
     <ClCompile Include="src\oni\utils\lock.c" />
     <ClCompile Include="src\oni\utils\log\logger.c" />
     <ClCompile Include="src\oni\utils\memory\allocator.c" />

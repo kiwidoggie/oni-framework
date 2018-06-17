@@ -15,34 +15,33 @@
 #define MAP_FAILED      ((void *)-1)
 #endif
 
-//! Byte swap unsigned short
-uint16_t swap_uint16(uint16_t val)
+int kwait4(int pid, int *status, int options, struct rusage *rusage)
 {
-	return (val << 8) | (val >> 8);
+	int(*wait4)(struct thread* thread, struct wait_args*) = kdlsym(sys_wait4);
+	if (!wait4)
+		return -1;
+
+	int error;
+	struct wait_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.pid = pid;
+	uap.status = status;
+	uap.options = options;
+	uap.rusage = rusage;
+	error = wait4(td, &uap);
+	if (error)
+		return -error;
+
+	// return socket
+	return td->td_retval[0];
 }
 
-//! Byte swap short
-int16_t swap_int16(int16_t val)
-{
-	return (val << 8) | ((val >> 8) & 0xFF);
-}
-
-//! Byte swap unsigned int
-uint32_t swap_uint32(uint32_t val)
-{
-	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF);
-	return (val << 16) | (val >> 16);
-}
-
-//! Byte swap int
-int32_t swap_int32(int32_t val)
-{
-	val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF);
-	return (val << 16) | ((val >> 16) & 0xFFFF);
-}
-
-
-int mlock(void* address, uint64_t size)
+int kmlock(void* address, uint64_t size)
 {
 	int(*mlock)(struct thread*, struct mlock_args*) = kdlsym(sys_mlock);
 	if (!mlock)
@@ -66,7 +65,7 @@ int mlock(void* address, uint64_t size)
 	return td->td_retval[0];
 }
 
-int mlockall(int how)
+int kmlockall(int how)
 {
 	int(*sys_mlockall)(struct thread*, struct mlockall_args*) = kdlsym(sys_mlockall);
 	if (!sys_mlockall)
@@ -163,35 +162,6 @@ int kmunmap(void *addr, size_t len)
 
 	// return socket
 	return td->td_retval[0];
-}
-
-uint16_t khtons(uint16_t port)
-{
-	return __bswap16(port);
-}
-
-void utilUSleep(int nanoseconds, const char* excuse)
-{
-	void(*_utilUSleep)(int nanoseconds, const char* excuse) = kdlsym(utilUSleep);
-	_utilUSleep(nanoseconds, excuse);
-}
-
-void kthread_exit(void)
-{
-	void(*_kthread_exit)(void) = kdlsym(kthread_exit);
-	_kthread_exit();
-}
-
-int kthread_add(void(*func)(void*), void* arg, struct proc* procp, struct thread** newtdpp, int flags, int pages, const char* fmt, ...)
-{
-	int(*_kthread_add)(void(*func)(void*), void* arg, struct proc* procptr, struct thread** tdptr, int flags, int pages, const char* fmt, ...) = kdlsym(kthread_add);
-	return _kthread_add(func, arg, procp, newtdpp, flags, pages, fmt);
-}
-int	make_dev_p(int _flags, struct cdev **_cdev, struct cdevsw *_devsw,
-	struct ucred *_cr, uid_t _uid, gid_t _gid, int _mode,
-	const char *_fmt, ...)
-{
-	return -1;
 }
 
 ssize_t kread(int fd, void* buf, size_t count)
@@ -740,73 +710,4 @@ int kkill(int pid, int signum)
 
 	// success
 	return td->td_retval[0];
-}
-
-int kthread_stop(struct task_struct *task)
-{
-	return 0;
-}
-
-void *kmemset(void *s, int c, size_t n)
-{
-	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
-	return memset(s, c, n);
-}
-
-void *kmemcpy(void *dest, const void *src, size_t n)
-{
-	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
-	return memcpy(dest, src, n);
-}
-
-void* kcalloc(size_t n, size_t size)
-{
-	size_t total = n * size;
-	void *p = kmalloc(total);
-
-	if (!p) return NULL;
-
-	return kmemset(p, 0, total);
-}
-
-
-int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, int write)
-{
-	struct thread* td = curthread;
-	struct iovec iov;
-	struct uio uio;
-	int ret;
-
-	if (!p) {
-		ret = EINVAL;
-		goto error;
-	}
-
-	if (size == 0) {
-		if (n)
-			*n = 0;
-		ret = 0;
-		goto error;
-	}
-
-	kmemset(&iov, 0, sizeof(iov));
-	iov.iov_base = (caddr_t)data;
-	iov.iov_len = size;
-
-	kmemset(&uio, 0, sizeof(uio));
-	uio.uio_iov = &iov;
-	uio.uio_iovcnt = 1;
-	uio.uio_offset = (off_t)ptr;
-	uio.uio_resid = (ssize_t)size;
-	uio.uio_segflg = UIO_SYSSPACE;
-	uio.uio_rw = write ? UIO_WRITE : UIO_READ;
-	uio.uio_td = td;
-
-	int(*proc_rwmem)(struct proc *p, struct uio *uio) = kdlsym(proc_rwmem);
-	ret = proc_rwmem(p, &uio);
-	if (n)
-		*n = (size_t)((ssize_t)size - uio.uio_resid);
-
-error:
-	return ret;
 }

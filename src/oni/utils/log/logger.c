@@ -5,6 +5,8 @@
 
 void logger_init(struct logger_t* logger)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	if (!logger)
 		return;
 
@@ -15,8 +17,8 @@ void logger_init(struct logger_t* logger)
 #endif
 	logger->logHandle = -1;
 
-	kmemset(logger->buffer, 0, sizeof(logger->buffer));
-	kmemset(logger->finalBuffer, 0, sizeof(logger->finalBuffer));
+	memset(logger->buffer, 0, sizeof(logger->buffer));
+	memset(logger->finalBuffer, 0, sizeof(logger->finalBuffer));
 
 	spin_init(&logger->lock);
 }
@@ -33,6 +35,7 @@ void logger_writelog(struct logger_t* logger, enum LogLevels level, const char* 
 	if (level > logger->logLevel)
 		return;
 
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
 	int(*snprintf)(char *str, size_t size, const char *format, ...) = kdlsym(snprintf);
 	int(*vsnprintf)(char *str, size_t size, const char *format, va_list ap) = kdlsym(vsnprintf);
 	void(*printf)(char *format, ...) = kdlsym(printf);
@@ -40,8 +43,8 @@ void logger_writelog(struct logger_t* logger, enum LogLevels level, const char* 
 	spin_lock(&logger->lock);
 
 	// Zero out the buffer
-	kmemset(logger->buffer, 0, sizeof(logger->buffer));
-	kmemset(logger->finalBuffer, 0, sizeof(logger->finalBuffer));
+	memset(logger->buffer, 0, sizeof(logger->buffer));
+	memset(logger->finalBuffer, 0, sizeof(logger->finalBuffer));
 
 	va_list args;
 	va_start(args, fmt);

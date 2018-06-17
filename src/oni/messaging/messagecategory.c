@@ -2,11 +2,13 @@
 #include <oni/messaging/messagecategory.h>
 #include <oni/messaging/message.h>
 
-#include <oni/utils/sys_wrappers.h>
+#include <oni/utils/kdlsym.h>
 #include <oni/utils/memory/allocator.h>
 
 void rpccategory_init(struct messagecategory_t* dispatcherCategory, uint8_t category)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	if (!dispatcherCategory)
 		return;
 
@@ -15,7 +17,7 @@ void rpccategory_init(struct messagecategory_t* dispatcherCategory, uint8_t cate
 
 	dispatcherCategory->category = category;
 
-	kmemset(dispatcherCategory->callbacks, 0, sizeof(dispatcherCategory->callbacks));
+	memset(dispatcherCategory->callbacks, 0, sizeof(dispatcherCategory->callbacks));
 }
 
 int32_t rpccategory_findFreeCallbackIndex(struct messagecategory_t* category)

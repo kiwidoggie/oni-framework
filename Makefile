@@ -40,7 +40,7 @@ L_DIRS	:=	-L.	-Llib
 LIBS	:= 
 
 # C++ Flags
-CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
+CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D_STANDALONE -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
 
 # Assembly flags
 SFLAGS	:= -nostartfiles -nodefaultlibs -nostdlib -fPIC

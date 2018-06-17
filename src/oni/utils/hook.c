@@ -30,6 +30,9 @@ static int32_t hook_getMinHookSize(void* targetFunction)
 
 struct hook_t* hook_create(void* targetFunction, void* functionHook)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
+
 	if (!targetFunction || !functionHook)
 		return NULL;
 
@@ -39,7 +42,7 @@ struct hook_t* hook_create(void* targetFunction, void* functionHook)
 		return NULL;
 
 	// Zero out the buffer
-	kmemset(hook, 0, sizeof(*hook));
+	memset(hook, 0, sizeof(*hook));
 
 	int32_t backupDataLength = hook_getMinHookSize(targetFunction);
 	if (backupDataLength == -1)
@@ -57,8 +60,8 @@ struct hook_t* hook_create(void* targetFunction, void* functionHook)
 	}
 
 	// Zero out and copy the beginning of the function
-	kmemset(backupData, 0, backupDataLength);
-	kmemcpy(backupData, targetFunction, backupDataLength);
+	memset(backupData, 0, backupDataLength);
+	memcpy(backupData, targetFunction, backupDataLength);
 
 	hook->targetAddress = targetFunction;
 	hook->hookAddress = functionHook;
@@ -71,6 +74,8 @@ struct hook_t* hook_create(void* targetFunction, void* functionHook)
 
 void hook_enable(struct hook_t* hook)
 {
+	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
+
 	if (!hook)
 		return;
 
@@ -96,7 +101,7 @@ void hook_enable(struct hook_t* hook)
 	// Change permissions and apply the hook
 	critical_enter();
 	cpu_disable_wp();
-	kmemcpy(hook->targetAddress, jumpBuffer, sizeof(jumpBuffer));
+	memcpy(hook->targetAddress, jumpBuffer, sizeof(jumpBuffer));
 	cpu_enable_wp();
 	critical_exit();
 
@@ -105,6 +110,8 @@ void hook_enable(struct hook_t* hook)
 
 void hook_disable(struct hook_t* hook)
 {
+	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
+
 	if (!hook)
 		return;
 
@@ -123,7 +130,7 @@ void hook_disable(struct hook_t* hook)
 	// Change permissions and apply the hook
 	critical_enter();
 	cpu_disable_wp();
-	kmemcpy(hook->targetAddress, hook->backupData, hook->backupLength);
+	memcpy(hook->targetAddress, hook->backupData, hook->backupLength);
 	cpu_enable_wp();
 	critical_exit();
 

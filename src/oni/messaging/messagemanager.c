@@ -4,17 +4,20 @@
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/memory/allocator.h>
 #include <oni/utils/logger.h>
+#include <oni/utils/kdlsym.h>
 
 void __dec(struct allocation_t* allocation);
 
 void messagemanager_init(struct messagemanager_t* manager)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	if (!manager)
 		return;
 
 	spin_init(&manager->lock);
 
-	kmemset(manager->categories, 0, sizeof(manager->categories));
+	memset(manager->categories, 0, sizeof(manager->categories));
 }
 
 int32_t messagemanager_findFreeCategoryIndex(struct messagemanager_t* manager)
@@ -59,8 +62,6 @@ struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* ma
 {
 	if (!manager)
 		return 0;
-
-	//WriteLog(LL_Debug, "[+] got dispatcher %p category: %d", manager, category);
 
 	if (category >= RPCCAT_COUNT)
 		return 0;
@@ -122,14 +123,15 @@ int32_t messagemanager_registerCallback(struct messagemanager_t* manager, uint32
 		return 0;
 
 	// Install the listener to the category
-	//category->callbacks[callbackIndex] = callback;
 	struct messagecategory_callback_t* categoryCallback = (struct messagecategory_callback_t*)kmalloc(sizeof(struct messagecategory_callback_t));
 	if (!categoryCallback)
 		return 0;
 
-	categoryCallback->type = callbackType; // TODO: Set type
+	// Set the type and callback
+	categoryCallback->type = callbackType;
 	categoryCallback->callback = callback;
 
+	// Install our callback
 	category->callbacks[callbackIndex] = categoryCallback;
 
 	return 1;
@@ -204,15 +206,11 @@ void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocat
 		goto cleanup;
 	}
 
-	//WriteLog(LL_Debug, "[+] sendMessage dispatcher: %p ref: %p message: %p", manager, msg, message);
-
 	if (message->header.category >= RPCCAT_COUNT)
 	{
 		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->header.category, RPCCAT_COUNT);
 		goto cleanup;
 	}
-
-	//WriteLog(LL_Debug, "[+] getting dispatcher category");
 
 	struct messagecategory_t* category = messagemanager_getCategory(manager, message->header.category);
 	if (!category)
@@ -222,7 +220,6 @@ void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocat
 	}
 
 	// Iterate through all of the callbacks
-	//WriteLog(LL_Debug, "[+] iterating callbacks");
 	for (uint32_t l_CallbackIndex = 0; l_CallbackIndex < RPCCATEGORY_MAX_CALLBACKS; ++l_CallbackIndex)
 	{
 		// Get the category callback structure
@@ -267,8 +264,6 @@ void messagemanager_sendSuccessMessage(struct messagemanager_t* manager, struct 
 	// Set success error
 	message->header.error_type = 0;
 
-	//WriteLog(LL_Debug, "sending success network response back to PC");
-
 	// Save the payload length
 	uint16_t payloadLength = message->header.payloadSize;
 
@@ -305,8 +300,6 @@ void messagemanager_sendErrorMessage(struct messagemanager_t* manager, struct al
 	{
 		// Set success error
 		message->header.error_type = 0;
-
-		//WriteLog(LL_Debug, "sending success network response back to PC");
 
 		// Save the payload length
 		uint16_t payloadLength = message->header.payloadSize;

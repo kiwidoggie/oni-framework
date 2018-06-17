@@ -11,15 +11,17 @@
 #include <oni/utils/hde/hde64.h>
 #include <oni/utils/hde/table64.h>
 
-#include <oni/utils/sys_wrappers.h>
+#include <oni/utils/kdlsym.h>
 
 unsigned int hde64_disasm(const void *code, hde64s *hs)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	uint8_t x, c, *p = (uint8_t *)code, cflags, opcode, pref = 0;
 	uint8_t *ht = hde64_table, m_mod, m_reg, m_rm, disp_size = 0;
 	uint8_t op64 = 0;
 
-	kmemset(hs, 0, sizeof(hde64s));
+	memset(hs, 0, sizeof(hde64s));
 
 	for (x = 16; x; x--)
 		switch (c = *p++) {

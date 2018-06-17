@@ -7,6 +7,8 @@
 
 struct allocation_t* __malloc(uint64_t size)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	if (!size)
 		return 0;
 
@@ -15,7 +17,7 @@ struct allocation_t* __malloc(uint64_t size)
 		return 0;
 
 	// Added bonus of zeroing buffers
-	kmemset(allocation, 0, sizeof(struct allocation_t));
+	memset(allocation, 0, sizeof(struct allocation_t));
 
 	void* data = kmalloc(size);
 	if (!data)
@@ -26,7 +28,7 @@ struct allocation_t* __malloc(uint64_t size)
 	}
 
 	// Added bonus of zeroing buffers
-	kmemset(data, 0, size);
+	memset(data, 0, size);
 
 	allocation->data = data;
 	allocation->size = size;
@@ -103,7 +105,7 @@ void* kmalloc(size_t size)
 
 	void* data = (void*)kmem_alloc(map, size);
 	if (data)
-		mlock(data, size);
+		kmlock(data, size);
 
 	return data;
 }
@@ -114,4 +116,16 @@ void kfree(void* address, size_t size)
 	void(*kmem_free)(void* map, void* addr, size_t size) = kdlsym(kmem_free);
 
 	kmem_free(map, address, size);
+}
+
+void* kcalloc(size_t n, size_t size)
+{
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
+	size_t total = n * size;
+	void *p = kmalloc(total);
+
+	if (!p) return NULL;
+
+	return memset(p, 0, total);
 }

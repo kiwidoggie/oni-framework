@@ -7,6 +7,7 @@
 #include <oni/utils/memory/allocator.h>
 #include <oni/utils/logger.h>
 #include <oni/utils/sys_wrappers.h>
+#include <oni/utils/kdlsym.h>
 
 #include <oni/framework.h>
 
@@ -15,6 +16,8 @@ void rpcconnection_init(struct rpcconnection_t* connection)
 Initializes a new rpcconnection_t object
 */
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	// Verify that our connection object is fine
 	if (!connection)
 		return;
@@ -27,7 +30,7 @@ Initializes a new rpcconnection_t object
 	connection->isRunning = 0;
 
 	// Zero out the buffer and the buffer size
-	kmemset(connection->buffer, 0, sizeof(connection->buffer));
+	memset(connection->buffer, 0, sizeof(connection->buffer));
 
 	// Zero out the address buffer
 	connection->address.sin_family = 0;
@@ -43,18 +46,22 @@ Initializes the buffers
 Returns: 1 on success, 0 otherwise
 */
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	// Verify that our connection object is good
 	if (!connection)
 		return 0;
 
 	// Allocate buffer data
-	kmemset(connection->buffer, 0, sizeof(connection->buffer));
+	memset(connection->buffer, 0, sizeof(connection->buffer));
 
 	return 1;
 }
 
 void rpcconnection_shutdown(struct rpcconnection_t* connection)
 {
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+
 	if (!connection)
 		return;
 
@@ -75,17 +82,17 @@ void rpcconnection_shutdown(struct rpcconnection_t* connection)
 	if (connection->thread)
 	{
 		// This stops the thread and waits for exit
-		kthread_stop(connection->thread);
+		//kthread_stop(connection->thread);
 
 		// Clear the thread
 		connection->thread = NULL;
 	}
 
 	// Zero the buffer
-	kmemset(connection->buffer, 0, sizeof(connection->buffer));
+	memset(connection->buffer, 0, sizeof(connection->buffer));
 
 	// Clear out the address information
-	kmemset(&connection->address, 0, sizeof(connection->address));
+	memset(&connection->address, 0, sizeof(connection->address));
 
 	// Invoke the onClientDisconnect handler on the server side to remove from the list and free this connection
 	if (connection->disconnect)
@@ -94,7 +101,9 @@ void rpcconnection_shutdown(struct rpcconnection_t* connection)
 
 void rpcconnection_serverThread(void* data)
 {
-	utilUSleep(500, RPC_SLEEP);
+	void(*kthread_exit)(void) = kdlsym(kthread_exit);
+	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
 
 	WriteLog(LL_Debug, "rpcconnection_serverThread entered");
 
@@ -125,7 +134,7 @@ void rpcconnection_serverThread(void* data)
 	{
 		WriteLog(LL_Debug, "rpcconnection_serverThread zeroing buffer");
 		// Zero out the buffer
-		kmemset(connection->buffer, 0, sizeof(connection->buffer));
+		memset(connection->buffer, 0, sizeof(connection->buffer));
 
 		// If the connection socket has an error state
 		if (connection->socket < 0)
@@ -225,10 +234,10 @@ void rpcconnection_serverThread(void* data)
 			}
 
 			WriteLog(LL_Debug, "zeroing payload");
-			kmemset(internalMessage->payload, 0, header->payloadSize);
+			memset(internalMessage->payload, 0, header->payloadSize);
 
 			WriteLog(LL_Debug, "copying payload");
-			kmemcpy(internalMessage->payload, (((char*)(connection->buffer)) + sizeof(struct message_header_t)), header->payloadSize);
+			memcpy(internalMessage->payload, (((char*)(connection->buffer)) + sizeof(struct message_header_t)), header->payloadSize);
 
 		}
 		

@@ -3,7 +3,7 @@
 
 
 #include <oni/messaging/message.h>
-#include <oni/utils/sys_wrappers.h>
+#include <oni/utils/kdlsym.h>
 #include <oni/utils/memory/allocator.h>
 #include <oni/utils/logger.h>
 
@@ -27,6 +27,8 @@ void message_init(struct message_t* message, int32_t socket)
 
 struct allocation_t* message_initParse(struct message_header_t* header, int32_t socket)
 {
+	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
+
 	if (!header)
 		return 0;
 
@@ -43,7 +45,7 @@ struct allocation_t* message_initParse(struct message_header_t* header, int32_t 
 	}
 
 	// Copy the header over
-	kmemcpy(&message->header, header, sizeof(message->header));
+	memcpy(&message->header, header, sizeof(message->header));
 
 	// Null out the payload pointer
 	message->payload = 0;
