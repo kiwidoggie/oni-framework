@@ -1,4 +1,6 @@
 #pragma once
 #include <oni/utils/types.h>
 
-uint8_t SelfElevateAndRun(uint8_t* userlandPayload, uint32_t userlandSize, void(*elevatedEntryPoint)(void* arguments));
+struct initparams_t;
+
+uint8_t SelfElevateAndRun(struct initparams_t* userInitParams);

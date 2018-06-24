@@ -16,4 +16,8 @@ struct initparams_t
 
 	// Kernel process handle
 	struct proc* process;
+
+	// Entrypoint
+	// Userland should set this to NULL
+	void* entrypoint;
 };

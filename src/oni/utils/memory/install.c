@@ -21,33 +21,34 @@
 #include <oni/utils/cpu.h>
 #include <oni/utils/syscall.h>
 
-uint8_t* gUserBaseAddress = NULL;
-uint32_t gUserBaseSize = 0;
-void* gElevatedEntryPoint = NULL;
-
-void SelfElevateAndRunStage2();
-
-
-
-uint8_t SelfElevateAndRun(uint8_t* userlandPayload, uint32_t userlandSize, void(*elevatedEntryPoint)(void* arguments))
+struct kexec_uap
 {
-	// Verify arguments
-	if (!userlandPayload || !userlandSize || !elevatedEntryPoint)
+	void* func;
+	void* arg0;
+};
+
+void SelfElevateAndRunStage2(struct thread* td, struct kexec_uap* uap);
+
+uint8_t SelfElevateAndRun(struct initparams_t* userInitParams)
+{
+	// Verify arguments are valid, but do not deref here
+	if (!userInitParams)
 		return false;
 
-	// Assign the user base address and size
-	gUserBaseAddress = userlandPayload;
-	gUserBaseSize = userlandSize;
-	gElevatedEntryPoint = elevatedEntryPoint;
-
-	// TODO: kexec
-	syscall1(11, SelfElevateAndRunStage2);
+	// kernel execute
+	syscall2(11, SelfElevateAndRunStage2, userInitParams);
 
 	return true;
 }
 
-void SelfElevateAndRunStage2()
+void SelfElevateAndRunStage2(struct thread* td, struct kexec_uap* uap)
 {
+	// If we do not have a valid parameter passed, kick back
+	if (!uap->arg0)
+		return;
+
+	struct initparams_t* userInitParams = uap->arg0;
+
 	// Fill the kernel base address
 	gKernelBase = (uint8_t*)kernelRdmsr(0xC0000082) - kdlsym_addr_Xfast_syscall;
 
@@ -55,11 +56,13 @@ void SelfElevateAndRunStage2()
 	void(*critical_enter)(void) = kdlsym(critical_enter);
 	void(*crtical_exit)(void) = kdlsym(critical_exit);
 	vm_offset_t(*kmem_alloc)(vm_map_t map, vm_size_t size) = kdlsym(kmem_alloc);
+	void(*kmem_free)(void* map, void* addr, size_t size) = kdlsym(kmem_free);
 	void(*printf)(char *format, ...) = kdlsym(printf);
 	int(*kproc_create)(void(*func)(void*), void* arg, struct proc** newpp, int flags, int pages, const char* fmt, ...) = kdlsym(kproc_create);
 	vm_map_t map = (vm_map_t)(*(uint64_t *)(kdlsym(kernel_map)));
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
 	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
+	int(*copyin)(const void* uaddr, void* kaddr, size_t len) = kdlsym(copyin);
 
 	// Apply patches
 	critical_enter();
@@ -70,51 +73,99 @@ void SelfElevateAndRunStage2()
 	cpu_enable_wp();
 	crtical_exit();
 
-	// We currently are in kernel context, executing userland memory
-	if (!gUserBaseAddress || !gUserBaseSize || !gElevatedEntryPoint)
-		return;
-
-	printf("[*] Got userland payload %p %x\n", gUserBaseAddress, gUserBaseSize);
-
-	// Allocate some memory
-	uint8_t* kernelPayload = (uint8_t*)kmem_alloc(map, gUserBaseSize);
-	if (!kernelPayload)
-		return;
-
-	printf("[+] Allocated kernel executable memory %p\n", kernelPayload);
-
-	// Find the exported init_kernelStartup symbol
-	uint64_t kernelStartupSlide = (uint64_t)gElevatedEntryPoint - (uint64_t)gUserBaseAddress;
-	printf("[*] Kernel startup slide %x\n", kernelStartupSlide);
-
-	uint8_t* kernelStartup = kernelPayload + kernelStartupSlide;
-	if (!kernelStartup)
-		return;
-
-	printf("[+] Pre-faulting user memory %p %x\n", 0x926100000, 0x200000);
-	kmlockall(1);
-
-	printf("[+] Pre-faulting kernel memory %p %x\n", kernelPayload, gUserBaseSize);
-	kmlock((void*)kernelPayload, gUserBaseSize);
-
-	printf("[*] Kernel startup address %p\n", kernelStartup);
+	printf("fucknutzzzzzz: %p\n", userInitParams);
 
 	// Create launch parameters, this is floating in "free kernel space" so the other process should
 	// be able to grab and use the pointer directly
 	struct initparams_t* initParams = (struct initparams_t*)kmem_alloc(map, sizeof(struct initparams_t));
 	if (!initParams)
 	{
-		printf("[-] Could not allocate new init params\n");
+		printf("[-] could not allocate initialization parameters.\n");
+		return;
+	}
+	memset(initParams, 0, sizeof(*initParams));
+
+	// Copyin our new arguments from userland
+	int copyResult = copyin(userInitParams, initParams, sizeof(*initParams));
+	if (copyResult != 0)
+	{
+		kmem_free(map, initParams, sizeof(*initParams));
+		printf("[-] could not copyin initalization parameters (%d)\n", copyResult);
 		return;
 	}
 
-	initParams->payloadBase = (uint64_t)kernelPayload;
-	initParams->payloadSize = gUserBaseSize;
-	initParams->process = 0;
+	// Verify that the entry point is non-null
+	if (initParams->entrypoint == NULL)
+	{
+		kmem_free(map, initParams, sizeof(*initParams));
+		printf("[-] invalid entry point, aborting.");
+		return;
+	}
+
+	printf("[*] b: %llx s: %llx ep: %llx\n", initParams->payloadBase, initParams->payloadSize, initParams->entrypoint);
+
+	// Verify that the entry point is within bounds
+	if (((uint64_t)initParams->entrypoint) < initParams->payloadBase ||
+		((uint64_t)initParams->entrypoint) > initParams->payloadBase + initParams->payloadSize)
+	{
+		kmem_free(map, initParams, sizeof(*initParams));
+		printf("[-] invalid entry point, out of bounds aborting.");
+		return;
+	}
+
+	// We are ignoring any of the process information passed from userland
+	initParams->process = NULL;
+
+	uint64_t payloadSize = initParams->payloadSize;
+	uint64_t payloadBase = initParams->payloadBase;
+
+	printf("[*] Got userland payload %p %x\n", payloadBase, payloadSize);
+
+	// Allocate some memory
+	uint8_t* kernelPayload = (uint8_t*)kmem_alloc(map, payloadSize);
+	if (!kernelPayload)
+	{
+		kmem_free(map, initParams, sizeof(*initParams));
+		printf("[-] could not allocate kernel payload.\n");
+		return;
+	}
+
+	printf("[+] Allocated kernel executable memory %p\n", kernelPayload);
+
+	// Find the exported init_kernelStartup symbol
+	uint64_t kernelStartupSlide = (uint64_t)initParams->entrypoint - (uint64_t)payloadBase;
+	printf("[*] Kernel startup slide %x\n", kernelStartupSlide);
+
+	uint8_t* kernelStartup = kernelPayload + kernelStartupSlide;
+	if (!kernelStartup)
+		return;
+
+	//printf("[+] Pre-faulting kernel memory %p %x\n", kernelPayload, gUserBaseSize);
+	//kmlock((void*)kernelPayload, gUserBaseSize);
+
+	printf("[*] Kernel startup address %p\n", kernelStartup);
+
+	// Update the entrypoint from a userland offset, to the new kernel entry point
+	initParams->entrypoint = (void(*)(void*))kernelStartup;
+	//struct initparams_t* initParams = (struct initparams_t*)kmem_alloc(map, sizeof(struct initparams_t));
+	//if (!initParams)
+	//{
+	//	printf("[-] Could not allocate new init params\n");
+	//	return;
+	//}
 
 	printf("[+] Copying payload from user-land\n");
-	memset(kernelPayload, 0, gUserBaseSize);
-	memcpy(kernelPayload, gUserBaseAddress, gUserBaseSize);
+	memset(kernelPayload, 0, payloadSize);
+
+	copyResult = copyin((void*)payloadBase, kernelPayload, payloadSize);
+	if (copyResult != 0)
+	{
+		// Intentionally blow the fuck up
+		printf("fuck, this is bad...\n");
+		*(uint32_t*)(0) = 0xDEADBABE;
+	}
+
+	memcpy(kernelPayload, (void*)payloadBase, payloadSize);
 
 	printf("[*] Kernel payload peek: %02X %02X %02X %02X %02X\n", kernelPayload[0], kernelPayload[1], kernelPayload[2], kernelPayload[3], kernelPayload[4]);
 	printf("[*] Kernel oni_kernel_startup peek: %02X %02X %02X %02X %02X\n", kernelStartup[0], kernelStartup[1], kernelStartup[2], kernelStartup[3], kernelStartup[4]);
