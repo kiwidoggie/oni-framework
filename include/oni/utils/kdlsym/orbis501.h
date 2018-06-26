@@ -97,4 +97,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_trap_fatal								 0x00171470
 #define kdlsym_addr_sys_wait4								 0x00035470
 #define kdlsym_addr_memcmp                                   0x50ac0
+
+#define	kdlsym_addr_mtx_unlock_sleep                         0x00401bd0
+#define	kdlsym_addr_mtx_lock_sleep                           0x004019a0
 #endif

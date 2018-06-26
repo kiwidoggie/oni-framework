@@ -92,5 +92,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_self_orbis_sysvec		0x019bbcd0
 #define kdlsym_addr_trap_fatal				0x00171580
 #define	kdlsym_addr_memcmp                  0x50ac0
+#define	kdlsym_addr__mtx_unlock_sleep                          0x4020a0
+#define	kdlsym_addr__mtx_lock_sleep                            0x401d70
 #endif
 

@@ -240,6 +240,25 @@ int kstat(char* path, struct stat* buf)
 	return td->td_retval[0];
 }
 
+void kclose_t(int socket, struct thread* td)
+{
+	int(*ksys_close)(struct thread *, struct close_args *) = kdlsym(sys_close);
+	if (!ksys_close)
+		return;
+
+	int error;
+	struct close_args uap;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.fd = socket;
+	error = ksys_close(td, &uap);
+	if (error)
+		return;
+}
+
 void kclose(int socket)
 {
 	int(*ksys_close)(struct thread *, struct close_args *) = kdlsym(sys_close);
@@ -503,6 +522,30 @@ int ksend(int socket, caddr_t buf, size_t len, int flags)
 		return -error;
 	else
 		return error;
+}
+
+int kopen_t(char* path, int flags, int mode, struct thread* td)
+{
+	int(*ksys_open)(struct thread *, struct open_args *) = kdlsym(sys_open);
+
+	int error;
+	struct open_args uap;
+	//struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.path = path;
+	uap.flags = flags;
+	uap.mode = mode;
+
+	error = ksys_open(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
 }
 
 int kopen(char* path, int flags, int mode)
