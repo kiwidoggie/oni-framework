@@ -1,4 +1,4 @@
-#include <mira/boot/patches.h>
+#include <oni/boot/patches.h>
 #include <oni/utils/kdlsym.h>
 #include <oni/utils/cpu.h>
 
