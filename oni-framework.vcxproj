@@ -45,7 +45,7 @@
     <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
     <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
+    <RemoteBuildOutputs>OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ProjectDir)obj\$(Platform)\$(Configuration)\</OutDir>
@@ -56,7 +56,7 @@
     <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
     <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
     <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
-    <RemoteBuildOutputs>$(RemoteRootDir)/$(ProjectName)/OniFramework.a</RemoteBuildOutputs>
+    <RemoteBuildOutputs>OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
   <ItemGroup>
     <ClInclude Include="include\oni\boot\patches.h" />

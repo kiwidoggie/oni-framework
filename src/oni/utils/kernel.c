@@ -4,7 +4,21 @@
 #include <oni/utils/kernel.h>
 #include <oni/utils/kdlsym.h>
 
+int proc_rw_mem_pid(int pid, void* ptr, size_t size, void* data, size_t* n, int write)
+{
+	struct  proc* (*pfind)(pid_t) = kdlsym(pfind);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
+	struct proc* process = pfind(pid);
+	if (!process)
+		return -1;
+
+	int result = proc_rw_mem(process, ptr, size, data, n, write);
+
+	_mtx_unlock_flags(&process->p_mtx, 0, __FILE__, __LINE__);
+
+	return result;
+}
 
 int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, int write)
 {

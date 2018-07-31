@@ -12,4 +12,5 @@ struct task_struct;
 	TODO: Description
 */
 uint64_t kernelRdmsr(int Register);
+int proc_rw_mem_pid(int pid, void* ptr, size_t size, void* data, size_t* n, int write);
 int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, int write);
