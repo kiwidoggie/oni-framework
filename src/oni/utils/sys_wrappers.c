@@ -618,6 +618,29 @@ int kmkdir(char * path, int mode)
 	return td->td_retval[0];
 }
 
+
+int kmkdir_t(char * path, int mode, struct thread* td)
+{
+	int(*sys_mkdir)(struct thread *, struct mkdir_args *) = kdlsym(sys_mkdir);
+
+	int error;
+	struct mkdir_args uap;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.path = path;
+	uap.mode = mode;
+
+	error = sys_mkdir(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
 int krmdir(char * path)
 {
 	int(*sys_rmdir)(struct thread *, struct rmdir_args *) = kdlsym(sys_rmdir);

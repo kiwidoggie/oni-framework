@@ -36,6 +36,7 @@ extern int kdup2(int oldd, int newd);
 extern int kshutdown(int s, int how);
 
 extern int kmkdir(char* path, int mode);
+extern int kmkdir_t(char * path, int mode, struct thread* td);
 extern int krmdir(char* path);
 
 extern off_t klseek(int fd, off_t offset, int whence);

@@ -132,7 +132,7 @@ void rpcconnection_serverThread(void* data)
 	// While we have the server running
 	while (connection->isRunning)
 	{
-		WriteLog(LL_Debug, "rpcconnection_serverThread zeroing buffer");
+		//WriteLog(LL_Debug, "rpcconnection_serverThread zeroing buffer");
 		// Zero out the buffer
 		memset(connection->buffer, 0, sizeof(connection->buffer));
 
@@ -143,7 +143,7 @@ void rpcconnection_serverThread(void* data)
 			goto cleanup;
 		}
 
-		WriteLog(LL_Debug, "rpcconnection_serverThread begin recv");
+		//WriteLog(LL_Debug, "rpcconnection_serverThread begin recv");
 		dataReceived = 0;
 
 		// Try to get the size of a full message
@@ -160,7 +160,7 @@ void rpcconnection_serverThread(void* data)
 		// Otherwise, try to get the entire full message
 		while (dataReceived < messageHeaderSize)
 		{
-			WriteLog(LL_Debug, "rpcconnection_serverThread recv more %d", dataReceived);
+			//WriteLog(LL_Debug, "rpcconnection_serverThread recv more %d", dataReceived);
 			uint32_t wantRecvSize = messageHeaderSize - dataReceived;
 
 			recvSize = krecv(connection->socket, &connection->buffer[dataReceived], wantRecvSize, 0);
@@ -173,7 +173,7 @@ void rpcconnection_serverThread(void* data)
 			dataReceived += recvSize;
 		}
 
-		WriteLog(LL_Debug, "checking message header");
+		//WriteLog(LL_Debug, "checking message header");
 
 		// Check the message
 		struct message_header_t* header = (struct message_header_t*)connection->buffer;
@@ -186,7 +186,7 @@ void rpcconnection_serverThread(void* data)
 		// Check to see how much data we actually got
 		uint64_t totalDataSize = recvSize + header->payloadSize;
 
-		WriteLog(LL_Debug, "checking payload length\n");
+		//WriteLog(LL_Debug, "checking payload length\n");
 		// If the payload length is bigger than the maximum buffer size, then fail
 		if (totalDataSize > ARRAYSIZE(connection->buffer))
 		{
@@ -194,7 +194,7 @@ void rpcconnection_serverThread(void* data)
 			goto cleanup;
 		}
 
-		WriteLog(LL_Debug, "total data size %lld", totalDataSize);
+		//WriteLog(LL_Debug, "total data size %lld", totalDataSize);
 		// Recv the payload
 		while (dataReceived < totalDataSize)
 		{
@@ -206,7 +206,7 @@ void rpcconnection_serverThread(void* data)
 			dataReceived += recvSize;
 		}
 
-		WriteLog(LL_Debug, "creating internal message");
+		//WriteLog(LL_Debug, "creating internal message");
 		// Create a new "local" message
 		struct allocation_t* allocation = message_initParse(header, connection->socket);
 		if (!allocation)
@@ -216,7 +216,7 @@ void rpcconnection_serverThread(void* data)
 		}
 
 		struct message_t* internalMessage = __get(allocation);
-		WriteLog(LL_Debug, "internal message %p", internalMessage);
+		//WriteLog(LL_Debug, "internal message %p", internalMessage);
 		if (!internalMessage)
 			continue;
 
@@ -225,7 +225,7 @@ void rpcconnection_serverThread(void* data)
 		// Allow us to send header-only messages
 		if (header->payloadSize != NULL)
 		{
-			WriteLog(LL_Debug, "allocating payload length %d", header->payloadSize);
+			//WriteLog(LL_Debug, "allocating payload length %d", header->payloadSize);
 			internalMessage->payload = kmalloc(header->payloadSize);
 			if (!internalMessage->payload)
 			{
@@ -233,10 +233,10 @@ void rpcconnection_serverThread(void* data)
 				break;
 			}
 
-			WriteLog(LL_Debug, "zeroing payload");
+			//WriteLog(LL_Debug, "zeroing payload");
 			memset(internalMessage->payload, 0, header->payloadSize);
 
-			WriteLog(LL_Debug, "copying payload");
+			//WriteLog(LL_Debug, "copying payload");
 			memcpy(internalMessage->payload, (((char*)(connection->buffer)) + sizeof(struct message_header_t)), header->payloadSize);
 
 		}
