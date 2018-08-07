@@ -11,6 +11,8 @@
 #include <sys/_iovec.h>
 #include <sys/uio.h>
 
+#include <fcntl.h>
+
 #ifndef MAP_FAILED
 #define MAP_FAILED      ((void *)-1)
 #endif
@@ -597,20 +599,15 @@ int kdup2(int oldd, int newd)
 
 int kmkdir(char * path, int mode)
 {
-	int(*sys_mkdir)(struct thread *, struct mkdir_args *) = kdlsym(sys_mkdir);
+	int (*kern_mkdirat)(struct thread *td, int fd, char *path, enum uio_seg segflg, int mode) = kdlsym(kern_mkdirat);
 
-	int error;
-	struct mkdir_args uap;
+	int error = 1;
 	struct thread *td = curthread;
 
-	// clear errors
+	// clear the return
 	td->td_retval[0] = 0;
 
-	// call syscall
-	uap.path = path;
-	uap.mode = mode;
-
-	error = sys_mkdir(td, &uap);
+	error = kern_mkdirat(td, AT_FDCWD, path, UIO_SYSSPACE, mode);
 	if (error)
 		return -error;
 
@@ -621,19 +618,14 @@ int kmkdir(char * path, int mode)
 
 int kmkdir_t(char * path, int mode, struct thread* td)
 {
-	int(*sys_mkdir)(struct thread *, struct mkdir_args *) = kdlsym(sys_mkdir);
+	int (*kern_mkdirat)(struct thread *td, int fd, char *path, enum uio_seg segflg, int mode) = kdlsym(kern_mkdirat);
 
-	int error;
-	struct mkdir_args uap;
+	int error = 1;
 
-	// clear errors
+	// clear the return
 	td->td_retval[0] = 0;
 
-	// call syscall
-	uap.path = path;
-	uap.mode = mode;
-
-	error = sys_mkdir(td, &uap);
+	error = kern_mkdirat(td, AT_FDCWD, path, UIO_SYSSPACE, mode);
 	if (error)
 		return -error;
 

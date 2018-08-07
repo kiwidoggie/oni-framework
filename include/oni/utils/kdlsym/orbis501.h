@@ -108,4 +108,11 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_M_MOUNT									 0x019BF300
 #define kdlsym_addr_realloc									 0x0010E480
 #define kdlsym_addr_copyinstr								 0x001EAA30
+
+#define kdlsym_addr_dmem_start_app_process 0x002468E0
+#define kdlsym_addr_exec_new_vmspace 0x0038A940
+#define kdlsym_addr_kern_open 0x0072AB50
+#define kdlsym_addr_kern_openat 0x0033B640
+#define kdlsym_addr_kern_readv 0x00152A10
+#define kdlsym_addr_kern_close  0x000C0F40
 #endif
