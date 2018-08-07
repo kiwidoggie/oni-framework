@@ -4,7 +4,9 @@
 
 #pragma once
 #include <oni/utils/types.h>
-#include <oni/utils/lock.h>
+#include <sys/param.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
 
 #define RPCDISPATCHER_MAX_CATEGORIES	32
 
@@ -17,7 +19,7 @@ struct messagemanager_t
 {
 	struct messagecategory_t* categories[RPCDISPATCHER_MAX_CATEGORIES];
 
-	struct lock_t lock;
+	struct mtx lock;
 };
 
 void messagemanager_init(struct messagemanager_t* manager);

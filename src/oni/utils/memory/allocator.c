@@ -8,6 +8,7 @@
 struct allocation_t* __malloc(uint64_t size)
 {
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
 
 	if (!size)
 		return 0;
@@ -33,7 +34,7 @@ struct allocation_t* __malloc(uint64_t size)
 	allocation->data = data;
 	allocation->size = size;
 	allocation->count = 0;
-	spin_init(&allocation->lock);
+	mtx_init(&allocation->lock, "allocmtx", NULL, 0);
 
 	return allocation;
 }
@@ -42,6 +43,7 @@ void __free(struct allocation_t* allocation)
 {
 	vm_map_t map = (vm_map_t)(*(uint64_t *)(kdlsym(kernel_map)));
 	void(*kmem_free)(void* map, void* addr, size_t size) = kdlsym(kmem_free);
+	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
 
 	if (!allocation)
 		return;
@@ -53,7 +55,7 @@ void __free(struct allocation_t* allocation)
 	}
 
 	allocation->count = 0;
-	spin_init(&allocation->lock);
+	mtx_init(&allocation->lock, "allocmtx", NULL, 0);
 	allocation->size = 0;
 
 	kmem_free(map, allocation, sizeof(struct allocation_t));
@@ -76,26 +78,32 @@ void* __get(struct allocation_t* allocation)
 // Increment reference, this shouldn't be called by the user directly
 void __inc(struct allocation_t* allocation)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!allocation)
 		return;
 
-	spin_lock(&allocation->lock);
+	_mtx_lock_flags(&allocation->lock, 0, __FILE__, __LINE__);
 	allocation->count++;
-	spin_unlock(&allocation->lock);
+	_mtx_unlock_flags(&allocation->lock, 0, __FILE__, __LINE__);
 }
 
 // Decrement reference count, this SHOULD be called by the user directly
 void __dec(struct allocation_t* allocation)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!allocation)
 		return;
 
-	spin_lock(&allocation->lock);
+	_mtx_lock_flags(&allocation->lock, 0, __FILE__, __LINE__);
 	allocation->count--;
-	spin_unlock(&allocation->lock);
+	_mtx_unlock_flags(&allocation->lock, 0, __FILE__, __LINE__);
 
 	if (allocation->count <= 0)
-		kfree(allocation, sizeof(struct allocation_t));
+		kfree(allocation, sizeof(*allocation));
 }
 
 void* kmalloc(size_t size)

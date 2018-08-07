@@ -81,7 +81,6 @@
     <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis505.h" />
     <ClInclude Include="include\oni\utils\kernel.h" />
-    <ClInclude Include="include\oni\utils\lock.h" />
     <ClInclude Include="include\oni\utils\logger.h" />
     <ClInclude Include="include\oni\utils\memory\allocator.h" />
     <ClInclude Include="include\oni\utils\memory\install.h" />
@@ -105,7 +104,6 @@
     <ClCompile Include="src\oni\utils\hook.c" />
     <ClCompile Include="src\oni\utils\kdlsym.c" />
     <ClCompile Include="src\oni\utils\kernel.c" />
-    <ClCompile Include="src\oni\utils\lock.c" />
     <ClCompile Include="src\oni\utils\log\logger.c" />
     <ClCompile Include="src\oni\utils\memory\allocator.c" />
     <ClCompile Include="src\oni\utils\memory\install.c" />

@@ -20,7 +20,8 @@ void logger_init(struct logger_t* logger)
 	memset(logger->buffer, 0, sizeof(logger->buffer));
 	memset(logger->finalBuffer, 0, sizeof(logger->finalBuffer));
 
-	spin_init(&logger->lock);
+	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
+	mtx_init(&logger->mutex, "logger", NULL, 0);
 }
 
 void logger_writelog(struct logger_t* logger, enum LogLevels level, const char* function, int line, const char* fmt, ...)
@@ -39,8 +40,10 @@ void logger_writelog(struct logger_t* logger, enum LogLevels level, const char* 
 	int(*snprintf)(char *str, size_t size, const char *format, ...) = kdlsym(snprintf);
 	int(*vsnprintf)(char *str, size_t size, const char *format, va_list ap) = kdlsym(vsnprintf);
 	void(*printf)(char *format, ...) = kdlsym(printf);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
-	spin_lock(&logger->lock);
+	_mtx_lock_flags(&logger->mutex, 0, __FILE__, __LINE__);
 
 	// Zero out the buffer
 	memset(logger->buffer, 0, sizeof(logger->buffer));
@@ -81,5 +84,5 @@ void logger_writelog(struct logger_t* logger, enum LogLevels level, const char* 
 	snprintf(logger->finalBuffer, sizeof(logger->finalBuffer), "%s[%s] %s:%d : %s %s\n", levelColor, levelString, function, line, logger->buffer, KNRM);
 	printf(logger->finalBuffer);
 
-	spin_unlock(&logger->lock);
+	_mtx_unlock_flags(&logger->mutex, 0, __FILE__, __LINE__);
 }

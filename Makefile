@@ -11,13 +11,13 @@ endif
 PROJ_NAME := OniFramework
 
 # C++ compiler
-CPPC	:=	g++
+CPPC	:=	clang
 
 # C compiler
-CC		:=	gcc
+CC		:=	clang
 
 # Archiver
-AS		:=	ar
+AS		:=	llvm-ar
 
 # Objcopy
 OBJCOPY	:=	objcopy
@@ -39,14 +39,17 @@ L_DIRS	:=	-L.	-Llib
 # Included libraries
 LIBS	:= 
 
-# C++ Flags
-CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D_STANDALONE -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O2 -fno-builtin -nostartfiles -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
+# C++ Flags don't use optimizations -O0 must be used for clang, gcc runs with 02 just fine
+# Removed From GCC: -nostartfiles
+CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D_STANDALONE -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O0 -fno-builtin -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
 
 # Assembly flags
-SFLAGS	:= -nostartfiles -nodefaultlibs -nostdlib -fPIC
+# Removed From GCC: -nostartfiles
+SFLAGS	:= -nodefaultlibs -nostdlib -fPIC
 
 # Linker flags
-LFLAGS	:= $(L_DIRS) -nostartfiles -nodefaultlibs -nostdlib -fPIC -Xlinker -T link.x -Wl,--build-id=none
+# Removed From GCC: -nostartfiles -Wl,--build-id=none
+LFLAGS	:= $(L_DIRS) -nodefaultlibs -nostdlib -fPIC -Xlinker -T link.x
 
 # Calculate the listing of all file paths
 CFILES	:=	$(wildcard $(SRC_DIR)/*.c)

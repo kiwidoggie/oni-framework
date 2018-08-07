@@ -140,19 +140,10 @@ void SelfElevateAndRunStage2(struct thread* td, struct kexec_uap* uap)
 	if (!kernelStartup)
 		return;
 
-	//printf("[+] Pre-faulting kernel memory %p %x\n", kernelPayload, gUserBaseSize);
-	//kmlock((void*)kernelPayload, gUserBaseSize);
-
 	printf("[*] Kernel startup address %p\n", kernelStartup);
 
 	// Update the entrypoint from a userland offset, to the new kernel entry point
 	initParams->entrypoint = (void(*)(void*))kernelStartup;
-	//struct initparams_t* initParams = (struct initparams_t*)kmem_alloc(map, sizeof(struct initparams_t));
-	//if (!initParams)
-	//{
-	//	printf("[-] Could not allocate new init params\n");
-	//	return;
-	//}
 
 	printf("[+] Copying payload from user-land\n");
 	memset(kernelPayload, 0, payloadSize);
@@ -162,7 +153,8 @@ void SelfElevateAndRunStage2(struct thread* td, struct kexec_uap* uap)
 	{
 		// Intentionally blow the fuck up
 		printf("fuck, this is bad...\n");
-		*(uint32_t*)(0) = 0xDEADBABE;
+		for (;;)
+			__asm__("nop");
 	}
 
 	memcpy(kernelPayload, (void*)payloadBase, payloadSize);

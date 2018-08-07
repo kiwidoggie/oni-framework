@@ -1,5 +1,6 @@
 #pragma once
-#include <oni/utils/lock.h>
+#include <sys/param.h>
+#include <sys/lock.h>
 #include <sys/mutex.h>
 
 enum LogLevels
@@ -37,8 +38,6 @@ struct logger_t
 
 	// Handle to log file on hdd
 	volatile int logHandle;
-
-	struct lock_t lock;
 
 	struct mtx mutex;
 };
