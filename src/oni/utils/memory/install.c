@@ -11,6 +11,7 @@
 #include <sys/proc.h>
 #include <sys/kthread.h>
 #include <sys/imgact.h>
+#include <sys/filedesc.h>
 #include <vm/vm.h>
 #include <vm/vm_page.h>
 #include <vm/pmap.h>
@@ -63,6 +64,19 @@ void SelfElevateAndRunStage2(struct thread* td, struct kexec_uap* uap)
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
 	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
 	int(*copyin)(const void* uaddr, void* kaddr, size_t len) = kdlsym(copyin);
+
+	// Escalate privileges & Escape the sandbox of the payload executer
+
+	struct ucred* cred = td->td_proc->p_ucred;
+	struct filedesc* fd = td->td_proc->p_fd;
+
+	cred->cr_uid = 0;
+	cred->cr_ruid = 0;
+	cred->cr_rgid = 0;
+	cred->cr_groups[0] = 0;
+
+	cred->cr_prison = *(void**)kdlsym(prison0);
+	fd->fd_rdir = fd->fd_jdir = *(void**)kdlsym(rootvnode);
 
 	// Apply patches
 	critical_enter();
