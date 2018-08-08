@@ -1,9 +1,9 @@
 #include <oni/utils/dynlib.h>
 #include <oni/utils/syscall.h>
 
-int64_t sys_dynlib_load_prx(char* prxPath)
+int64_t sys_dynlib_load_prx(char* prxPath, int* outModuleId)
 {
-	return (int64_t)syscall1(594, prxPath);
+	return (int64_t)syscall2(594, prxPath, outModuleId);
 }
 
 int64_t sys_dynlib_unload_prx(int64_t prxID)
