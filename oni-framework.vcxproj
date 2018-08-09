@@ -73,6 +73,7 @@
     <ClInclude Include="include\oni\rpc\rpcserver.h" />
     <ClInclude Include="include\oni\utils\cpu.h" />
     <ClInclude Include="include\oni\utils\dynlib.h" />
+    <ClInclude Include="include\oni\utils\escape.h" />
     <ClInclude Include="include\oni\utils\hde\hde64.h" />
     <ClInclude Include="include\oni\utils\hde\table64.h" />
     <ClInclude Include="include\oni\utils\hook.h" />
@@ -100,6 +101,7 @@
     <ClCompile Include="src\oni\rpc\rpcconnection.c" />
     <ClCompile Include="src\oni\rpc\rpcserver.c" />
     <ClCompile Include="src\oni\utils\dynlib.c" />
+    <ClCompile Include="src\oni\utils\escape.c" />
     <ClCompile Include="src\oni\utils\hde\hde64.c" />
     <ClCompile Include="src\oni\utils\hook.c" />
     <ClCompile Include="src\oni\utils\kdlsym.c" />

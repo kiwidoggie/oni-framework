@@ -8,6 +8,7 @@
 #include <oni/utils/logger.h>
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/kdlsym.h>
+#include <oni/utils/escape.h>
 
 #include <oni/framework.h>
 
@@ -113,6 +114,8 @@ void rpcconnection_serverThread(void* data)
 		kthread_exit();
 		return;
 	}
+
+	oni_threadEscape(curthread, NULL);
 
 	struct rpcconnection_t* connection = (struct rpcconnection_t*)data;
 	// Initialize all of the buffers
