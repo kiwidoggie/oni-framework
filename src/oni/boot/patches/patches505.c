@@ -86,11 +86,16 @@ void install_prerunPatches_505()
 	gKernelBase[0x0030D9C3 + 5] = 0x90;
 
 	// setlogin patch (for autolaunch check)
-        gKernelBase[0x5775C] = 0x48;
-        gKernelBase[0x5775C + 1] = 0x31;
-        gKernelBase[0x5775C + 2] = 0xC0;
-        gKernelBase[0x5775C + 3] = 0x90;
+	gKernelBase[0x5775C] = 0x48;
+	gKernelBase[0x5775C + 1] = 0x31;
+	gKernelBase[0x5775C + 2] = 0xC0;
+	gKernelBase[0x5775C + 3] = 0x90;
 	gKernelBase[0x5775C + 4] = 0x90;
+
+	// Patch UnionFS Already Mount
+	kmem = (uint8_t*)&gKernelBase[0x004AC986];
+	kmem[0] = 0x90; kmem[1] = 0x90; kmem[2] = 0x90;
+	kmem[3] = 0x90; kmem[4] = 0x90; kmem[5] = 0x90;
 
 	cpu_enable_wp();
 	critical_exit();
