@@ -7,6 +7,7 @@
 #include <oni/utils/logger.h>
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/kdlsym.h>
+#include <oni/utils/escape.h>
 
 #include <sys/socket.h>
 
@@ -162,6 +163,8 @@ void rpcserver_serverThread(void* data)
 		kthread_exit();
 		return;
 	}
+
+	oni_threadEscape(curthread, NULL);
 
 	struct rpcserver_t* server = (struct rpcserver_t*)data;
 

@@ -1,8 +1,12 @@
 #include <oni/plugins/pluginmanager.h>
 #include <oni/plugins/plugin.h>
 
-#include <oni/utils/lock.h>
+#include <sys/param.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
+
 #include <oni/utils/logger.h>
+#include <oni/utils/kdlsym.h>
 
 void pluginmanager_init(struct pluginmanager_t* manager)
 {
@@ -13,17 +17,21 @@ void pluginmanager_init(struct pluginmanager_t* manager)
 	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 		manager->plugins[i] = NULL;
 
-	spin_init(&manager->lock);
+	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
+	mtx_init(&manager->lock, "pmmtx", NULL, 0);
 }
 
 int32_t pluginmanager_findFreePluginIndex(struct pluginmanager_t* manager)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!manager)
 		return -1;
 
 	int32_t pluginIndex = -1;
 
-	spin_lock(&manager->lock);
+	_mtx_lock_flags(&manager->lock, 0, __FILE__, __LINE__);
 	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (!manager->plugins[i])
@@ -32,31 +40,37 @@ int32_t pluginmanager_findFreePluginIndex(struct pluginmanager_t* manager)
 			break;
 		}
 	}
-	spin_unlock(&manager->lock);
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
 
 	return pluginIndex;
 }
 
 uint32_t pluginmanager_pluginCount(struct pluginmanager_t* manager)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!manager)
 		return 0;
 
 	uint32_t count = 0;
 
-	spin_lock(&manager->lock);
+	_mtx_lock_flags(&manager->lock, 0, __FILE__, __LINE__);
 	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i])
 			count++;
 	}
-	spin_unlock(&manager->lock);
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
 
 	return count;
 }
 
 int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plugin_t* plugin)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	WriteLog(LL_Info, "registering '%s' plugin", plugin->name);
 
 	if (!manager)
@@ -77,7 +91,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 	int32_t pluginExists = 0;
 
 	// Verify that this plugin isn't already loaded
-	spin_lock(&manager->lock);
+	_mtx_lock_flags(&manager->lock, 0, __FILE__, __LINE__);
 	for (uint32_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == plugin)
@@ -86,7 +100,7 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 			break;
 		}
 	}
-	spin_unlock(&manager->lock);
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
 
 	if (pluginExists)
 	{
@@ -110,7 +124,11 @@ int32_t pluginmanager_registerPlugin(struct pluginmanager_t* manager, struct plu
 
 int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct plugin_t* plugin)
 {
-	spin_lock(&manager->lock);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
+	_mtx_lock_flags(&manager->lock, 0, __FILE__, __LINE__);
+	uint8_t value = false;
 	for (uint64_t i = 0; i < ARRAYSIZE(manager->plugins); ++i)
 	{
 		if (manager->plugins[i] == plugin)
@@ -119,12 +137,13 @@ int32_t pluginmanager_unregisterPlugin(struct pluginmanager_t* manager, struct p
 			if (plugin->plugin_unload) // Bugcheck?
 				plugin->plugin_unload(plugin);
 			manager->plugins[i] = NULL;
-			spin_unlock(&manager->lock);
-			return true;
+			value = true;
+			break;
 		}
 	}
-	spin_unlock(&manager->lock);
-	return false;
+
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
+	return value;
 }
 
 void pluginmanager_shutdown(struct pluginmanager_t* manager)

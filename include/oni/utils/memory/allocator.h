@@ -1,6 +1,8 @@
 #pragma once
+#include <sys/param.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
 
-#include <oni/utils/lock.h>
 #include <oni/utils/types.h>
 
 // Reference counter structure
@@ -15,7 +17,7 @@ struct allocation_t {
 	int count;
 
 	// Lock
-	struct lock_t lock;
+	struct mtx lock;
 };
 
 /*

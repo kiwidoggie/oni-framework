@@ -15,19 +15,23 @@ void messagemanager_init(struct messagemanager_t* manager)
 	if (!manager)
 		return;
 
-	spin_init(&manager->lock);
+	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
+	mtx_init(&manager->lock, "mmmtx", NULL, 0);
 
 	memset(manager->categories, 0, sizeof(manager->categories));
 }
 
 int32_t messagemanager_findFreeCategoryIndex(struct messagemanager_t* manager)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!manager)
 		return -1;
 
 	int32_t result = -1;
 
-	spin_lock(&manager->lock);
+	_mtx_lock_flags(&manager->lock, 0, __FILE__, __LINE__);
 	for (uint32_t i = 0; i < RPCDISPATCHER_MAX_CATEGORIES; ++i)
 	{
 		if (!manager->categories[i])
@@ -36,30 +40,36 @@ int32_t messagemanager_findFreeCategoryIndex(struct messagemanager_t* manager)
 			break;
 		}
 	}
-	spin_unlock(&manager->lock);
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
 
 	return result;
 }
 
 uint32_t messagemanager_freeCategoryCount(struct messagemanager_t* manager)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!manager)
 		return 0;
 
 	uint32_t clientCount = 0;
-	spin_lock(&manager->lock);
+	_mtx_lock_flags(&manager->lock,0,  __FILE__, __LINE__);
 	for (uint32_t i = 0; i < RPCDISPATCHER_MAX_CATEGORIES; ++i)
 	{
 		if (manager->categories[i])
 			clientCount++;
 	}
-	spin_unlock(&manager->lock);
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
 
 	return clientCount;
 }
 
 struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* manager, uint32_t category)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!manager)
 		return 0;
 
@@ -68,7 +78,7 @@ struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* ma
 
 	struct messagecategory_t* rpccategory = 0;
 
-	spin_lock(&manager->lock);
+	_mtx_lock_flags(&manager->lock, 0, __FILE__, __LINE__);
 	for (uint32_t i = 0; i < RPCDISPATCHER_MAX_CATEGORIES; ++i)
 	{
 		struct messagecategory_t* cat = manager->categories[i];
@@ -82,7 +92,7 @@ struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* ma
 			break;
 		}
 	}
-	spin_unlock(&manager->lock);
+	_mtx_unlock_flags(&manager->lock, 0, __FILE__, __LINE__);
 
 	return rpccategory;
 }

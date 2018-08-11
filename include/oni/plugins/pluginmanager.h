@@ -1,8 +1,10 @@
 #pragma once
 #include <oni/utils/types.h>
-#include <oni/utils/lock.h>
 
 #include <oni/config.h>
+#include <sys/param.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
 
 struct plugin_t;
 
@@ -17,7 +19,7 @@ struct pluginmanager_t
 	struct plugin_t* plugins[PLUGINMANAGER_MAX_PLUGINS]; // TODO: Make this dynamically allocated
 
 	// Lock
-	struct lock_t lock;
+	struct mtx lock;
 };
 
 // Pluginmanager initialization

@@ -42,9 +42,9 @@
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
     <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;_STANDALONE_DEBUG</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
-    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
-    <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;scan-build make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;scan-build make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;scan-build make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -53,9 +53,9 @@
     <AdditionalSourcesToCopyMapping>Makefile;$(AdditionalSourcesToCopyMapping)</AdditionalSourcesToCopyMapping>
     <NMakePreprocessorDefinitions>_KERNEL;ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501;_STANDALONE</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(ProjectDir)include;$(SolutionDir)Firmware\Dependencies\freebsd-headers\include;</NMakeIncludeSearchPath>
-    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
-    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
-    <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;make clean</RemoteCleanCommandLine>
+    <RemoteBuildCommandLine>cd $(RemoteProjectDir);make create;scan-build make ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteBuildCommandLine>
+    <RemoteReBuildCommandLine>cd $(RemoteProjectDir);make create;scan-build make clean;make  ONI_PLATFORM=ONI_PLATFORM_ORBIS_BSD_501</RemoteReBuildCommandLine>
+    <RemoteCleanCommandLine>cd $(RemoteProjectDir);make create;scan-build make clean</RemoteCleanCommandLine>
     <RemoteBuildOutputs>OniFramework.a</RemoteBuildOutputs>
   </PropertyGroup>
   <ItemGroup>
@@ -73,6 +73,7 @@
     <ClInclude Include="include\oni\rpc\rpcserver.h" />
     <ClInclude Include="include\oni\utils\cpu.h" />
     <ClInclude Include="include\oni\utils\dynlib.h" />
+    <ClInclude Include="include\oni\utils\escape.h" />
     <ClInclude Include="include\oni\utils\hde\hde64.h" />
     <ClInclude Include="include\oni\utils\hde\table64.h" />
     <ClInclude Include="include\oni\utils\hook.h" />
@@ -81,7 +82,6 @@
     <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis505.h" />
     <ClInclude Include="include\oni\utils\kernel.h" />
-    <ClInclude Include="include\oni\utils\lock.h" />
     <ClInclude Include="include\oni\utils\logger.h" />
     <ClInclude Include="include\oni\utils\memory\allocator.h" />
     <ClInclude Include="include\oni\utils\memory\install.h" />
@@ -101,11 +101,11 @@
     <ClCompile Include="src\oni\rpc\rpcconnection.c" />
     <ClCompile Include="src\oni\rpc\rpcserver.c" />
     <ClCompile Include="src\oni\utils\dynlib.c" />
+    <ClCompile Include="src\oni\utils\escape.c" />
     <ClCompile Include="src\oni\utils\hde\hde64.c" />
     <ClCompile Include="src\oni\utils\hook.c" />
     <ClCompile Include="src\oni\utils\kdlsym.c" />
     <ClCompile Include="src\oni\utils\kernel.c" />
-    <ClCompile Include="src\oni\utils\lock.c" />
     <ClCompile Include="src\oni\utils\log\logger.c" />
     <ClCompile Include="src\oni\utils\memory\allocator.c" />
     <ClCompile Include="src\oni\utils\memory\install.c" />
