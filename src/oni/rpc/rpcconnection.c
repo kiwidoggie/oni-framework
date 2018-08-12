@@ -40,67 +40,7 @@ Initializes a new rpcconnection_t object
 	connection->address.sin_len = sizeof(connection->address);
 }
 
-int32_t rpcconnection_initializeBuffers(struct rpcconnection_t* connection)
-/*
-Initializes the buffers
-
-Returns: 1 on success, 0 otherwise
-*/
-{
-	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
-
-	// Verify that our connection object is good
-	if (!connection)
-		return 0;
-
-	// Allocate buffer data
-	memset(connection->buffer, 0, sizeof(connection->buffer));
-
-	return 1;
-}
-
-void rpcconnection_shutdown(struct rpcconnection_t* connection)
-{
-	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
-
-	if (!connection)
-		return;
-
-	// Manually update the status, the thread should auto-terminate
-	connection->isRunning = FALSE;
-
-	// If the socket is not invalid
-	if (connection->socket != -1)
-	{
-		// Free the socket
-		kshutdown(connection->socket, 2);
-
-		kclose(connection->socket);
-		connection->socket = -1;
-	}
-
-	// Stop the thread if it hasn't been already
-	if (connection->thread)
-	{
-		// This stops the thread and waits for exit
-		//kthread_stop(connection->thread);
-
-		// Clear the thread
-		connection->thread = NULL;
-	}
-
-	// Zero the buffer
-	memset(connection->buffer, 0, sizeof(connection->buffer));
-
-	// Clear out the address information
-	memset(&connection->address, 0, sizeof(connection->address));
-
-	// Invoke the onClientDisconnect handler on the server side to remove from the list and free this connection
-	if (connection->disconnect)
-		connection->disconnect(connection->server, connection);
-}
-
-void rpcconnection_serverThread(void* data)
+void rpcconnection_clientThread(void* data)
 {
 	void(*kthread_exit)(void) = kdlsym(kthread_exit);
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
@@ -114,17 +54,14 @@ void rpcconnection_serverThread(void* data)
 		kthread_exit();
 		return;
 	}
+	struct rpcconnection_t* connection = (struct rpcconnection_t*)data;
 
+	// Jailbreak this new thread
 	oni_threadEscape(curthread, NULL);
 
-	struct rpcconnection_t* connection = (struct rpcconnection_t*)data;
 	// Initialize all of the buffers
 	WriteLog(LL_Debug, "rpcconnection_serverThread init buffers");
-	if (!rpcconnection_initializeBuffers(connection))
-	{
-		kthread_exit();
-		return;
-	}
+	memset(connection->buffer, 0, sizeof(connection->buffer));
 
 	// Set the running status
 	connection->isRunning = true;
@@ -151,7 +88,7 @@ void rpcconnection_serverThread(void* data)
 
 		// Try to get the size of a full message
 		int32_t recvSize = krecv(connection->socket, (char*)connection->buffer, messageHeaderSize, 0);
-		if (recvSize < 0)
+		if (recvSize <= 0)
 		{
 			WriteLog(LL_Error, "%d recv returned %d.", connection->socket, recvSize);
 			goto cleanup;
@@ -176,13 +113,11 @@ void rpcconnection_serverThread(void* data)
 			dataReceived += recvSize;
 		}
 
-		//WriteLog(LL_Debug, "checking message header");
-
-		// Check the message
+		// Check the message header magic
 		struct message_header_t* header = (struct message_header_t*)connection->buffer;
 		if (header->magic != RPCMESSAGE_HEADER_MAGIC)
 		{
-			WriteLog(LL_Error, "invalid header got 0x%02x expected 0xCC", header->magic);
+			WriteLog(LL_Error, "invalid header got 0x%02x expected 0x%02x", header->magic, RPCMESSAGE_HEADER_MAGIC);
 			goto cleanup;
 		}
 			
@@ -203,13 +138,12 @@ void rpcconnection_serverThread(void* data)
 		{
 			uint64_t dataSizeRemaining = totalDataSize - dataReceived;
 			recvSize = krecv(connection->socket, (char*)(connection->buffer) + dataReceived, dataSizeRemaining & 0xFFFFFFFF, 0);
-			if (recvSize < 0)
+			if (recvSize <= 0)
 				goto cleanup;
 
 			dataReceived += recvSize;
 		}
 
-		//WriteLog(LL_Debug, "creating internal message");
 		// Create a new "local" message
 		struct allocation_t* allocation = message_initParse(header, connection->socket);
 		if (!allocation)
@@ -219,21 +153,22 @@ void rpcconnection_serverThread(void* data)
 		}
 
 		struct message_t* internalMessage = __get(allocation);
-		//WriteLog(LL_Debug, "internal message %p", internalMessage);
 		if (!internalMessage)
-			continue;
+			goto do_dec;
 
 		internalMessage->payload = NULL;
 
 		// Allow us to send header-only messages
-		if (header->payloadSize != NULL)
+		if (header->payloadSize > 0)
 		{
+			// TODO: Implement maximum size check
+			// But also if there is an additional fd, then just write to the fd or error
 			//WriteLog(LL_Debug, "allocating payload length %d", header->payloadSize);
 			internalMessage->payload = kmalloc(header->payloadSize);
 			if (!internalMessage->payload)
 			{
 				WriteLog(LL_Error, "error allocating payload");
-				break;
+				goto do_dec;
 			}
 
 			//WriteLog(LL_Debug, "zeroing payload");
@@ -249,12 +184,23 @@ void rpcconnection_serverThread(void* data)
 		// Now that we have the full message chunk, parse the category and the type and get it the fuck outa here
 		messagemanager_sendMessage(gFramework->messageManager, allocation);
 
+	do_dec:
 		__dec(allocation);
 	}
 
 	
 cleanup:
 	connection->isRunning = false;
-	rpcconnection_shutdown(connection);
+	if (connection->socket >= 0)
+	{
+		kshutdown(connection->socket, 2);
+		kclose(connection->socket);
+		connection->socket = -1;
+	}
+
+	if (connection->disconnect != NULL &&
+		connection->server != NULL)
+		connection->disconnect(connection->server, connection);
+	
 	kthread_exit();
 }

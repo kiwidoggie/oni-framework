@@ -40,11 +40,9 @@ struct rpcconnection_t
 
 	// Server reference
 	void* server;
+
 };
 
 void rpcconnection_init(struct rpcconnection_t* connection);
-int32_t rpcconnection_initializeBuffers(struct rpcconnection_t* connection);
 
-void rpcconnection_shutdown(struct rpcconnection_t* connection);
-
-void rpcconnection_serverThread(void* data);
+void rpcconnection_clientThread(void* data);

@@ -43,6 +43,9 @@ void rpcserver_init(struct rpcserver_t* server, struct proc* process)
 	server->socket = -1;
 
 	server->process = process;
+
+	void(*mtx_init)(struct mtx *m, const char *name, const char *type, int opts) = kdlsym(mtx_init);
+	mtx_init(&server->lock, "rpcmtx", NULL, 0);
 }
 
 int32_t rpcserver_findFreeClientIndex(struct rpcserver_t* server)
@@ -85,6 +88,8 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 {
 	int(*kthread_add)(void(*func)(void*), void* arg, struct proc* procptr, struct thread** tdptr, int flags, int pages, const char* fmt, ...) = kdlsym(kthread_add);
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
 	WriteLog(LL_Debug, "entered rpcserver_startup.");
 	// Verify that our server object is valid
@@ -141,12 +146,15 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 		return 0;
 	}
 
+	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+
 	int creationResult = kthread_add(rpcserver_serverThread, server, server->process, (struct thread**)&server->thread, 0, 0, "oni_rpcserver");
 	if (creationResult != 0)
 		return 0;
 
 	WriteLog(LL_Debug, "rpcServer thread started.");
 
+	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 	return 1;
 }
 
@@ -154,8 +162,9 @@ void rpcserver_serverThread(void* data)
 {
 	void(*kthread_exit)(void) = kdlsym(kthread_exit);
 	int(*kthread_add)(void(*func)(void*), void* arg, struct proc* procptr, struct thread** tdptr, int flags, int pages, const char* fmt, ...) = kdlsym(kthread_add);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
-	WriteLog(LL_Debug, "entered serverThread.");
 
 	if (!data)
 	{
@@ -164,9 +173,16 @@ void rpcserver_serverThread(void* data)
 		return;
 	}
 
-	oni_threadEscape(curthread, NULL);
-
 	struct rpcserver_t* server = (struct rpcserver_t*)data;
+
+	// This should block until it is freed in the previous context
+	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+
+	WriteLog(LL_Debug, "entered serverThread.");
+
+	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
+
+	oni_threadEscape(curthread, NULL);
 
 	// Set the running flag
 	server->isRunning = TRUE;
@@ -185,7 +201,6 @@ void rpcserver_serverThread(void* data)
 
 	// Initialize our new client connection
 	rpcconnection_init(clientConnection);
-	rpcconnection_initializeBuffers(clientConnection);
 
 	// Assign callbacks
 	clientConnection->server = server;
@@ -194,17 +209,24 @@ void rpcserver_serverThread(void* data)
 	WriteLog(LL_Debug, "waiting for clients...");
 
 	size_t clientAddressSize = sizeof(clientConnection->address);
-	while ((clientConnection->socket = kaccept(server->socket, (struct sockaddr*)&clientConnection->address, &clientAddressSize)) > 0)
-	{
-		// Check to see if we should continue running
-		if (!server->isRunning)
-			break;
 
+	while (server->isRunning)
+	{
+		clientConnection->socket = kaccept(server->socket, (struct sockaddr*)&clientConnection->address, &clientAddressSize);
 		WriteLog(LL_Debug, "accepted first client.");
 
 		// If we got an invalid socket, then just try again. I'm not sure what is supposed to happen in this case
-		if (clientConnection->socket == -1)
-			continue;
+		if (clientConnection->socket < 0)
+		{
+			if (clientConnection->socket == -EINTR)
+				continue;
+
+			WriteLog(LL_Error, "could not accept client (%d)", clientConnection->socket);
+			server->isRunning = false;
+			break;
+		}
+
+		_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 		int32_t clientIndex = rpcserver_findFreeClientIndex(server);
 		if (clientIndex == -1)
@@ -216,20 +238,22 @@ void rpcserver_serverThread(void* data)
 			continue;
 		}
 
-		WriteLog(LL_Debug, "found free rpc client.");
+		WriteLog(LL_Debug, "client to be assigned to index %d.", clientIndex);
+
+		// Assign our server the connection for later
+		server->connections[clientIndex] = clientConnection;
+
+		WriteLog(LL_Debug, "client added.");
+
+		_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 		// Create the new client thread which will handle dispatching
-
-		int creationResult = kthread_add(rpcconnection_serverThread, clientConnection, server->process, (struct thread**)&clientConnection->thread, 0, 0, "oni_client");
+		int creationResult = kthread_add(rpcconnection_clientThread, clientConnection, server->process, (struct thread**)&clientConnection->thread, 0, 0, "oni_client");
 		if (creationResult != 0)
 		{
 			WriteLog(LL_Error, "could not create client thread.");
 			continue;
 		}
-
-		// Assign our server the connection for later
-		server->connections[clientIndex] = clientConnection;
-		WriteLog(LL_Debug, "client added.");
 
 		// Intentionally do not free the previous object, since now we have a reference to it in the server and allocate a new object
 		clientConnection = (struct rpcconnection_t*)kmalloc(sizeof(struct rpcconnection_t));
@@ -241,48 +265,48 @@ void rpcserver_serverThread(void* data)
 
 		// Initialize our connection
 		rpcconnection_init(clientConnection);
-		rpcconnection_initializeBuffers(clientConnection);
 
 		// Assign callbacks
 		clientConnection->server = server;
 		clientConnection->disconnect = rpcserver_onClientDisconnect;
 	}
-
-	WriteLog(LL_Debug, "shutting down.");
+	
+	uint8_t shutdownResult = rpcserver_shutdown(server);
+	WriteLog(LL_Debug, "rpc server has shutdown with result %d", shutdownResult);
 
 	kthread_exit();
 }
 
-int32_t rpcserver_shutdown(struct rpcserver_t* server)
+uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 {
-	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
 	if (!server)
 		return false;
 
-	server->isRunning = false;
+	if (server->socket == -1)
+		return false;
 
-	// Stop all connections
+	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+
+	// Iterate through each of the connections and force connections to error and get cleaned up
 	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
-		rpcconnection_shutdown(server->connections[i]);
-
-	// Free all of the server bullshit
-	if (server->socket != -1)
 	{
-		kshutdown(server->socket, 2);
-		kclose(server->socket);
-		server->socket = -1;
+		struct rpcconnection_t* connection = server->connections[i];
+		if (!connection)
+			continue;
+
+		kshutdown(connection->socket, 2);
+		kclose(connection->socket);
+		connection->socket = -1;
 	}
 
-	// This stops the thread and waits for exit
-	if (server->thread)
-	{
-		//kthread_stop(server->thread);
-		server->thread = NULL;
-	}
+	// Shut down the actual server socket
+	kshutdown(server->socket, 2);
+	kclose(server->socket);
 
-	// Zero address space
-	memset(&server->address, 0, sizeof(server->address));
+	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	return true;
 }
@@ -306,19 +330,25 @@ int32_t rpcserver_findClientIndex(struct rpcserver_t* server, struct rpcconnecti
 
 void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnection_t* clientConnection)
 {
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+
 	if (!server || !clientConnection)
 		return;
 
+	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+
 	// Remove the index
 	int32_t clientIndex = rpcserver_findClientIndex(server, clientConnection);
-	if (clientIndex == -1)
-		return;
+	if (clientIndex != -1)
+	{
+		// Remove it from our list
+		server->connections[clientIndex] = NULL;
 
-	// Remove it from our list
-	server->connections[clientIndex] = NULL;
-
-	// Free the connection
-	kfree(clientConnection, sizeof(*clientConnection));
+		// Free the connection
+		kfree(clientConnection, sizeof(*clientConnection));
+	}
 
 	WriteLog(LL_Debug, "onClientDisconnect: %d", clientIndex);
+	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 }

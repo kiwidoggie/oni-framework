@@ -1,10 +1,11 @@
-
-
-
-
 #pragma once
+
 #include <sys/types.h>
 #include <netinet/in.h>
+
+#include <sys/param.h>
+#include <sys/lock.h>
+#include <sys/mutex.h>
 
 
 #define RPCSERVER_MAX_CLIENTS	16
@@ -25,6 +26,8 @@ struct rpcserver_t
 	struct sockaddr_in address;
 	int socket;
 	struct proc* process;
+
+	struct mtx lock;
 };
 
 void rpcserver_init(struct rpcserver_t* server, struct proc* process);
@@ -36,7 +39,7 @@ uint32_t rpcserver_freeClientCount(struct rpcserver_t* server);
 
 int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port);
 
-int32_t rpcserver_shutdown(struct rpcserver_t* server);
+uint8_t rpcserver_shutdown(struct rpcserver_t* server);
 
 void rpcserver_serverThread(void* data);
 

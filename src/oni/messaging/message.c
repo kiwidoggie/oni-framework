@@ -30,25 +30,25 @@ struct allocation_t* message_initParse(struct message_header_t* header, int32_t 
 	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
 
 	if (!header)
-		return 0;
+		return NULL;
 
 	// Allocate space for the new message
 	struct allocation_t* allocation = __malloc(sizeof(struct message_t));
 	if (!allocation)
-		return 0;
+		return NULL;
 
 	struct message_t* message = allocation->data;
 	if (!message)
 	{
 		__free(allocation);
-		return 0;
+		return NULL;
 	}
 
 	// Copy the header over
 	memcpy(&message->header, header, sizeof(message->header));
 
 	// Null out the payload pointer
-	message->payload = 0;
+	message->payload = NULL;
 
 	// Set the socket pointer
 	message->socket = socket;
