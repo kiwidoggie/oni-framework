@@ -4,6 +4,7 @@
 #include <oni/utils/hde/hde64.h>
 
 #include <sys/sysproto.h>
+#include <sys/sysent.h>
 #include <sys/pcpu.h>
 #include <sys/proc.h>
 #include <vm/vm.h>
@@ -640,6 +641,27 @@ int krmdir(char * path)
 	int error;
 	struct rmdir_args uap;
 	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.path = path;
+
+	error = sys_rmdir(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
+int krmdir_t(char * path, struct thread* td)
+{
+	int(*sys_rmdir)(struct thread *, struct rmdir_args *) = kdlsym(sys_rmdir);
+
+	int error;
+	struct rmdir_args uap;
 
 	// clear errors
 	td->td_retval[0] = 0;

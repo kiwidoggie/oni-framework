@@ -72,6 +72,8 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_memcpy					0x1ea530
 #define kdlsym_addr_memset					0x003205C0
 #define kdlsym_addr_sys_stat				0x0033DFE0
+#define kdlsym_addr_sys_nmount				0x001DE2E0
+#define kdlsym_addr_sys_unmount				0x001DFC70
 
 #define	kdlsym_addr_Xfast_syscall           0x1c0
 #define kdlsym_addr_sys_dup2				0x000BF050
@@ -98,7 +100,6 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define	kdlsym_addr__mtx_lock_sleep         0x401d70
 #define kdlsym_addr_strstr					0x17DFB0
 
-#define kdlsym_addr_sys_nmount								 0x001DE2E0
 #define kdlsym_addr_strlen									 0x003B71A0
 #define kdlsym_addr_strdup									 0x001C1C30
 #define kdlsym_addr_M_MOUNT									 0x019BF300
@@ -108,5 +109,15 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_exec_new_vmspace  0x0038AD10
 #define kdlsym_addr_kern_mkdirat 0x00340BD0
 #define kdlsym_addr_strcmp 0x001D0FD0
+#define kdlsym_addr_kern_sysents 0x0107C610
+#define kdlsym_addr_fget_unlocked 0x000C34B0
+#define kdlsym_addr_snprintf 0x436350
+
+#define kdlsym_addr_mini_syscore_self_binary				 0x014C9D48
+#define kdlsym_addr_sceSblAuthMgrSmStart					 0x006418E0
+#define kdlsym_addr_sceSblAuthMgrVerifyHeader				 0x0063C550
+#define kdlsym_addr_sceSblAuthMgrIsLoadable2                 0x0063C4F0
+#define kdlsym_addr__sceSblAuthMgrGetSelfInfo                0x0063CD40
+#define kdlsym_addr_sceSblAuthMgrSmVerifyHeader              0x00642B40
 #endif
 

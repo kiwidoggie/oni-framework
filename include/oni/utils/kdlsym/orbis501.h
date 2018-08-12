@@ -118,10 +118,10 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_kern_close								 0x000C0F40
 #define kdlsym_addr_kern_mkdirat							 0x00340800
 
-#define kdlsym_addr_mini_syscore_self_binary				 0x14C9D48
-#define kdlsym_addr_sceSblAuthMgrSmStart					 0x641500
+#define kdlsym_addr_mini_syscore_self_binary				 0x014C9D48
+#define kdlsym_addr_sceSblAuthMgrSmStart					 0x00641500
 #define kdlsym_addr_sceSblAuthMgrVerifyHeader				 0x0063C170
-#define kdlsym_addr_sceSblAuthMgrIsLoadable2                 0x63C110
+#define kdlsym_addr_sceSblAuthMgrIsLoadable2                 0x0063C110
 #define kdlsym_addr__sceSblAuthMgrGetSelfInfo                0x0063c960
 #define kdlsym_addr_sceSblAuthMgrSmVerifyHeader              0x00642760
 #endif
