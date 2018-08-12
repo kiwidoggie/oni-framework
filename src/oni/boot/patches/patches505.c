@@ -39,20 +39,20 @@ void install_prerunPatches_505()
 	kmem[0] = 0x07;
 	
 	// Don't restrict dynlib information.
-    uint64_t dynlib = (uint64_t)&gKernelBase[0x2B2620];
+    uint64_t *dynlib = (uint64_t)&gKernelBase[0x2B2620];
 
     *dynlib = 0x9090909090C3C031;
 
     // Allow usage of mangled symbols in dynlib_do_dlsym().
-uint16_t one = (uint16_t)&gKernelBase[0x2AFB47];
+uint16_t *one = (uint16_t)&gKernelBase[0x2AFB47];
 
     *one = 0x9090;
 
-uint16_t two = (uint16_t)&gKernelBase[0x2AFB47 + 2];
+uint16_t *two = (uint16_t)&gKernelBase[0x2AFB47 + 2];
 
     *two = 0x9090;
 
-uint16_t three = (uint16_t)&gKernelBase[0x2AFB47 + 4];
+uint16_t *three = (uint16_t)&gKernelBase[0x2AFB47 + 4];
 
     *three = 0x9090;
 
