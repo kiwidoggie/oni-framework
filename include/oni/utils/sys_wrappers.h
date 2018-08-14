@@ -27,6 +27,7 @@ extern int kgetdents(int fd, char* buf, int nbytes);
 extern ssize_t kread(int fd, void* buf, size_t count);
 extern int kfstat(int fd, struct stat* sb);
 extern int kstat(char* path, struct stat* buf);
+extern int kstat_t(char* path, struct stat* buf, struct thread* td);
 extern int kunlink(char* path);
 extern int ksetuid(uid_t uid);
 extern int kptrace(int req, pid_t pid, caddr_t addr, int data);
