@@ -243,6 +243,30 @@ int kstat(char* path, struct stat* buf)
 	return td->td_retval[0];
 }
 
+int kstat_t(char* path, struct stat* buf, struct thread* td)
+{
+	int(*sys_stat)(struct thread*, struct stat_args*) = kdlsym(sys_stat);
+	if (!sys_stat)
+		return -1;
+
+	int error;
+	struct stat_args uap;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.path = path;
+	uap.ub = buf;
+
+	error = sys_stat(td, &uap);
+	if (error)
+		return -error;
+
+	// return socket
+	return td->td_retval[0];
+}
+
 void kclose_t(int socket, struct thread* td)
 {
 	int(*ksys_close)(struct thread *, struct close_args *) = kdlsym(sys_close);
