@@ -43,14 +43,14 @@ void install_prerunPatches_501()
 
     // Allow usage of mangled symbols in dynlib_do_dlsym(). 
 	
-	kmem = (uint8_t*)&gKernelBase[0x2AF877];
-        kmem[0] = 0x9090;
-	
-	kmem = (uint8_t*)&gKernelBase[0x2AF877 + 2];
-        kmem[0] = 0x9090;
-	
-	kmem = (uint8_t*)&gKernelBase[0x2AF877 + 4];
-        kmem[0] = 0x9090;
+     kmem = (uint8_t*)&gKernelBase[0x2AF877];
+
+     kmem[0] = 0x90;
+     kmem[1] = 0x90;
+     kmem[2] = 0x90;
+     kmem[3] = 0x90;
+     kmem[4] = 0x90;
+     kmem[5] = 0x90;
 	
 	// Enable rwx
 	kmem = (uint8_t*)&gKernelBase[0xFCC38];
