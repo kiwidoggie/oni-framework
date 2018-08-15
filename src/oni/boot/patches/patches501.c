@@ -30,22 +30,20 @@ void install_prerunPatches_501()
 	kmem[4] = 0x00; kmem[5] = 0xC3; kmem[6] = 0x90; kmem[7] = 0x90;
 
 	// Don't restrict dynlib information. 
-    uint64_t *dynlib = (uint64_t*)&gKernelBase[0x2B2350];
-
-    *dynlib = 0x9090909090C3C031;
+	
+	kmem = (uint64_t*)&gKernelBase[0x2B2350];
+        kmem[byte] = 0x9090909090C3C031;
 
     // Allow usage of mangled symbols in dynlib_do_dlsym(). 
-    uint16_t *ffff = (uint16_t*)&gKernelBase[0x2AF877];
-
-    *ffff = 0x9090;
-
-    uint16_t *ffffa = (uint16_t*)&gKernelBase[0x2AF877 + 2];
-
-    *ffffa = 0x9090;
-
-     uint16_t *ffffb = (uint16_t*)&gKernelBase[0x2AF877 + 4];
-
-    *ffffb = 0x9090;
+	
+	kmem = (uint64_t*)&gKernelBase[0x2AF877];
+        kmem[byte] = 0x9090;
+	
+	kmem = (uint64_t*)&gKernelBase[0x2AF877 + 2];
+        kmem[byte] = 0x9090;
+	
+	kmem = (uint64_t*)&gKernelBase[0x2AF877 + 4];
+        kmem[byte] = 0x9090;
 	
 	// Enable rwx
 	kmem = (uint8_t*)&gKernelBase[0xFCC38];
