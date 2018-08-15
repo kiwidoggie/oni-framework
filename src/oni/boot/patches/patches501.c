@@ -30,7 +30,7 @@ void install_prerunPatches_501()
 	kmem[4] = 0x00; kmem[5] = 0xC3; kmem[6] = 0x90; kmem[7] = 0x90;
 
 	// Don't restrict dynlib information. 
-	kmem = (uint8_t*)&gKernelBase[0x002B2620];
+	kmem = (uint8_t*)&gKernelBase[0x2B2350];
 
         kmem[0] = 0x90;
         kmem[1] = 0x90;
