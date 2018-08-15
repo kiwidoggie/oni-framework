@@ -37,6 +37,29 @@ void install_prerunPatches_505()
 	kmem[0] = 0x07;
 	kmem = (uint8_t*)&gKernelBase[0x000FCD56];
 	kmem[0] = 0x07;
+	
+	// Don't restrict dynlib information.
+	kmem = (uint8_t*)&gKernelBase[0x2B2620];
+
+        kmem[0] = 0x90;
+        kmem[1] = 0x90;
+        kmem[2] = 0x90;
+        kmem[3] = 0x90;
+        kmem[4] = 0x90;
+        kmem[5] = 0xC3;
+        kmem[6] = 0xC0;
+        kmem[7] = 0x31;
+
+    // Allow usage of mangled symbols in dynlib_do_dlsym(). 
+	
+     kmem = (uint8_t*)&gKernelBase[0x2AFB47];
+
+     kmem[0] = 0x90;
+     kmem[1] = 0x90;
+     kmem[2] = 0x90;
+     kmem[3] = 0x90;
+     kmem[4] = 0x90;
+     kmem[5] = 0x90;
 
 	// Patch copy(in/out)
 	uint16_t *copyinpatch = (uint16_t*)&gKernelBase[0x001EA767];

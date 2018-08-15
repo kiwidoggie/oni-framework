@@ -10,6 +10,14 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 */
 #define kdlsym_addr_allproc					0x2382ff8
 #define kdlsym_addr_allproc_lock			0x2382f98
+#define kdlsym_addr_prison0                      0x10986A0 
+#define kdlsym_addr_rootvnode                    0x22C1A70
+#define kdlsym_addr_mini_syscore_self_binary                 0x014C9D48
+#define kdlsym_addr_sceSblAuthMgrSmStart                     0x006418E0
+#define kdlsym_addr_sceSblAuthMgrVerifyHeader                 0x0063C550
+#define kdlsym_addr_sceSblAuthMgrIsLoadable2                 0x0063C4F0
+#define kdlsym_addr__sceSblAuthMgrGetSelfInfo                0x0063CD40
+#define kdlsym_addr_sceSblAuthMgrSmVerifyHeader              0x00642B40
 
 #define	kdlsym_addr_critical_enter          0x28e7a0
 #define	kdlsym_addr_critical_exit           0x28e7b0
@@ -89,8 +97,6 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sys_rmdir				0x00340ED0
 
 #define kdlsym_addr_eventhandler_register	0x001EC400
-#define kdlsym_addr_prison0					0x10986A0
-#define kdlsym_addr_rootvnode				0x22C1A70
 #define	kdlsym_addr_copyin									 0x001EA710
 #define kdlsym_addr_self_orbis_sysvec		0x019bbcd0
 #define kdlsym_addr_trap_fatal				0x00171580
