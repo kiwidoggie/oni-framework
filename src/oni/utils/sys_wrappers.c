@@ -815,3 +815,31 @@ int kkill(int pid, int signum)
 	// success
 	return td->td_retval[0];
 }
+
+int ksetsockopt(int socket, int level, int name, caddr_t val, int valsize)
+{
+	struct sysentvec* sv = kdlsym(self_orbis_sysvec);
+	struct sysent* sysents = sv->sv_table;
+	int(*sys_setsockopt)(struct thread *, struct setsockopt_args *) = (void*)sysents[105].sy_call;
+
+	int error;
+	struct setsockopt_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.s = socket;
+	uap.level = level;
+	uap.name = name;
+	uap.val = val;
+	uap.valsize = valsize;
+
+	error = sys_setsockopt(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}

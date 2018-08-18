@@ -189,14 +189,30 @@ void rpcserver_serverThread(void* data)
 
 	WriteLog(LL_Debug, "server running.");
 
+	struct timeval timeout;
+	timeout.tv_sec = 3;
+	timeout.tv_usec = 0;
+
+	int32_t result = ksetsockopt(server->socket, SOL_SOCKET, SO_RCVTIMEO, (caddr_t)&timeout, sizeof(timeout));
+	if (result < 0)
+	{
+		WriteLog(LL_Error, "could not set recv timeout (%d).", result);
+		goto cleanup;
+	}
+
+	result = ksetsockopt(server->socket, SOL_SOCKET, SO_SNDTIMEO, (caddr_t)&timeout, sizeof(timeout));
+	if (result < 0)
+	{
+		WriteLog(LL_Error, "could not set send timeout (%d).", result);
+		goto cleanup;
+	}
+
 	// Create a new client connection
 	struct rpcconnection_t* clientConnection = (struct rpcconnection_t*)kmalloc(sizeof(struct rpcconnection_t));
 	if (!clientConnection)
 	{
 		WriteLog(LL_Error, "could not allocate rpcconnection_t object.");
-		server->isRunning = FALSE;
-		kthread_exit();
-		return;
+		goto cleanup;
 	}
 
 	// Initialize our new client connection
@@ -213,20 +229,16 @@ void rpcserver_serverThread(void* data)
 	while (server->isRunning)
 	{
 		clientConnection->socket = kaccept(server->socket, (struct sockaddr*)&clientConnection->address, &clientAddressSize);
-		WriteLog(LL_Debug, "accepted first client.");
+		WriteLog(LL_Debug, "accepted first client (%d).", clientConnection->socket);
 
 		// If we got an invalid socket, then just try again. I'm not sure what is supposed to happen in this case
-		if (clientConnection->socket < 0)
+		if (clientConnection->socket <= 0)
 		{
-			if (clientConnection->socket == -EINTR)
-				continue;
-
 			WriteLog(LL_Error, "could not accept client (%d)", clientConnection->socket);
-			server->isRunning = false;
-			break;
+			goto cleanup;
 		}
 
-		_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+		// Below is a stupid coding pattern to prevent multiple locks/unlocks
 
 		int32_t clientIndex = rpcserver_findFreeClientIndex(server);
 		if (clientIndex == -1)
@@ -238,14 +250,10 @@ void rpcserver_serverThread(void* data)
 			continue;
 		}
 
-		WriteLog(LL_Debug, "client to be assigned to index %d.", clientIndex);
-
 		// Assign our server the connection for later
+		WriteLog(LL_Debug, "client to be assigned to index %d.", clientIndex);
 		server->connections[clientIndex] = clientConnection;
-
 		WriteLog(LL_Debug, "client added.");
-
-		_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 		// Create the new client thread which will handle dispatching
 		int creationResult = kthread_add(rpcconnection_clientThread, clientConnection, server->process, (struct thread**)&clientConnection->thread, 0, 0, "oni_client");
@@ -260,7 +268,7 @@ void rpcserver_serverThread(void* data)
 		if (!clientConnection)
 		{
 			WriteLog(LL_Error, "could not allocate another rpcconnection_t object.");
-			break;
+			goto cleanup;
 		}
 
 		// Initialize our connection
@@ -271,16 +279,15 @@ void rpcserver_serverThread(void* data)
 		clientConnection->disconnect = rpcserver_onClientDisconnect;
 	}
 	
-	uint8_t shutdownResult = rpcserver_shutdown(server);
-	WriteLog(LL_Debug, "rpc server has shutdown with result %d", shutdownResult);
-
+cleanup:
+	WriteLog(LL_Debug, "rpc server has shutdown with result %d", rpcserver_shutdown(server));
 	kthread_exit();
 }
 
 uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 {
-	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
-	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+	//void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	//void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
 	if (!server)
 		return false;
@@ -288,7 +295,8 @@ uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 	if (server->socket == -1)
 		return false;
 
-	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+	server->isRunning = false;
+	//_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	// Iterate through each of the connections and force connections to error and get cleaned up
 	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
@@ -306,7 +314,7 @@ uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 	kshutdown(server->socket, 2);
 	kclose(server->socket);
 
-	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
+	//_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	return true;
 }
@@ -330,13 +338,13 @@ int32_t rpcserver_findClientIndex(struct rpcserver_t* server, struct rpcconnecti
 
 void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnection_t* clientConnection)
 {
-	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
-	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+	//void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	//void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
 	if (!server || !clientConnection)
 		return;
 
-	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+	//_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	// Remove the index
 	int32_t clientIndex = rpcserver_findClientIndex(server, clientConnection);
@@ -344,11 +352,11 @@ void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnecti
 	{
 		// Remove it from our list
 		server->connections[clientIndex] = NULL;
-
-		// Free the connection
-		kfree(clientConnection, sizeof(*clientConnection));
 	}
 
+	// Free the connection
+	kfree(clientConnection, sizeof(*clientConnection));
+
 	WriteLog(LL_Debug, "onClientDisconnect: %d", clientIndex);
-	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
+	//_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 }
