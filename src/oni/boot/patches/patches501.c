@@ -11,6 +11,7 @@ void install_prerunPatches_501()
 	// You must assign the kernel base pointer before anything is done
 	if (!gKernelBase)
 		return;
+
 	
 	// Use "kmem" for all patches
 	uint8_t *kmem;
@@ -39,7 +40,7 @@ void install_prerunPatches_501()
 	kmem[5] = 0xC3;
 	kmem[6] = 0x90;
 	kmem[7] = 0x90;
-	
+
 	kmem = (uint8_t *)&gKernelBase[0x00011750];
 	kmem[0] = 0xB8;
 	kmem[1] = 0x01;
@@ -53,7 +54,7 @@ void install_prerunPatches_501()
 	// Enable rwx mapping
 	kmem = (uint8_t *)&gKernelBase[0x000FCC38];
 	kmem[0] = 0x07;
-	
+
 	kmem = (uint8_t *)&gKernelBase[0x000FCC46];
 	kmem[0] = 0x07;
 
@@ -61,13 +62,13 @@ void install_prerunPatches_501()
 	kmem = (uint8_t *)&gKernelBase[0x001EA657];
 	kmem[0] = 0x90;
 	kmem[1] = 0x90;
-	
+
 	kmem = (uint8_t *)&gKernelBase[0x001EA572];
 	kmem[0] = 0x90;
 	kmem[1] = 0x90;
 
 	// Enable MAP_SELF
-	kmem = (uint8_t *)&gKernelBase[0x000117b0];
+	kmem = (uint8_t *)&gKernelBase[0x000117B0];
 	kmem[0] = 0xB8;
 	kmem[1] = 0x01;
 	kmem[2] = 0x00;
@@ -75,7 +76,7 @@ void install_prerunPatches_501()
 	kmem[4] = 0x00;
 	kmem[5] = 0xC3;
 	
-	kmem = (uint8_t *)&gKernelBase[0x000117c0];
+	kmem = (uint8_t *)&gKernelBase[0x000117C0];
 	kmem[0] = 0xB8;
 	kmem[1] = 0x01;
 	kmem[2] = 0x00;
@@ -83,7 +84,7 @@ void install_prerunPatches_501()
 	kmem[4] = 0x00;
 	kmem[5] = 0xC3;
 	
-	kmem = (uint8_t *)&gKernelBase[0x0013ef2f];
+	kmem = (uint8_t *)&gKernelBase[0x0013EF2F];
 	kmem[0] = 0x31;
 	kmem[1] = 0xC0;
 	kmem[2] = 0x90;

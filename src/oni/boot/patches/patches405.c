@@ -5,8 +5,8 @@
 // Patches done by SiSTRo & Joonie
 
 /*
-Please, please, please!
-Keep patches consistent with the used patch style for readability.
+	Please, please, please!
+	Keep patches consistent with the used patch style for readability.
 */
 void install_prerunPatches_405() {
 
@@ -14,8 +14,8 @@ void install_prerunPatches_405() {
 	if (!gKernelBase)
 		return;
 
-	void(*critical_enter)(void) = kdlsym(critical_enter);
-	void(*critical_exit)(void) = kdlsym(critical_exit);
+	void (*critical_enter)(void) = kdlsym(critical_enter);
+	void (*critical_exit)(void)  = kdlsym(critical_exit);
 
 	// Apply patches
 	critical_enter();
