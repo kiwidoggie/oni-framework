@@ -105,7 +105,7 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 
 	// Create a new socket
 	server->socket = ksocket(AF_INET, SOCK_STREAM, 0);
-	if (server->socket == -1)
+	if (server->socket < 0)
 	{
 		WriteLog(LL_Error, "could not create socket.");
 		return 0;
@@ -136,7 +136,7 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 	WriteLog(LL_Debug, "socket bound.");
 
 	// Listen for clients
-	if (klisten(server->socket, 3) == -1)
+	if (klisten(server->socket, 3) < 0)
 	{
 		kshutdown(server->socket, 2);
 		kclose(server->socket);
@@ -146,16 +146,18 @@ int32_t rpcserver_startup(struct rpcserver_t* server, uint16_t port)
 		return 0;
 	}
 
+	uint8_t threadCreated = true;
 	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	int creationResult = kthread_add(rpcserver_serverThread, server, server->process, (struct thread**)&server->thread, 0, 0, "oni_rpcserver");
 	if (creationResult != 0)
-		return 0;
+		threadCreated = false;
 
-	WriteLog(LL_Debug, "rpcServer thread started.");
+	WriteLog(LL_Debug, "rpcServer thread %s.", threadCreated ? "successfully" : "unsuccessfully");
 
 	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
-	return 1;
+
+	return threadCreated;
 }
 
 void rpcserver_serverThread(void* data)
@@ -164,7 +166,6 @@ void rpcserver_serverThread(void* data)
 	int(*kthread_add)(void(*func)(void*), void* arg, struct proc* procptr, struct thread** tdptr, int flags, int pages, const char* fmt, ...) = kdlsym(kthread_add);
 	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
 	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
-
 
 	if (!data)
 	{
@@ -207,6 +208,15 @@ void rpcserver_serverThread(void* data)
 		goto cleanup;
 	}
 
+	// SO_LINGER
+	timeout.tv_sec = 0;
+	result = ksetsockopt(server->socket, SOL_SOCKET, SO_LINGER, (caddr_t)&timeout, sizeof(timeout));
+	if (result < 0)
+	{
+		WriteLog(LL_Error, "could not set send timeout (%d).", result);
+		goto cleanup;
+	}
+
 	// Create a new client connection
 	struct rpcconnection_t* clientConnection = (struct rpcconnection_t*)kmalloc(sizeof(struct rpcconnection_t));
 	if (!clientConnection)
@@ -235,6 +245,7 @@ void rpcserver_serverThread(void* data)
 		if (clientConnection->socket <= 0)
 		{
 			WriteLog(LL_Error, "could not accept client (%d)", clientConnection->socket);
+			server->isRunning = false;
 			goto cleanup;
 		}
 
@@ -268,6 +279,7 @@ void rpcserver_serverThread(void* data)
 		if (!clientConnection)
 		{
 			WriteLog(LL_Error, "could not allocate another rpcconnection_t object.");
+			server->isRunning = false;
 			goto cleanup;
 		}
 
@@ -305,14 +317,22 @@ uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 		if (!connection)
 			continue;
 
+		if (connection->socket < 0)
+			continue;
+
 		kshutdown(connection->socket, 2);
 		kclose(connection->socket);
 		connection->socket = -1;
 	}
 
 	// Shut down the actual server socket
-	kshutdown(server->socket, 2);
-	kclose(server->socket);
+	if (server->socket >= 0)
+	{
+		kshutdown(server->socket, 2);
+		kclose(server->socket);
+		server->socket = -1;
+	}
+
 
 	//_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 
