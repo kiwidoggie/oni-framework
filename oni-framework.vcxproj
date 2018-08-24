@@ -79,6 +79,8 @@
     <ClInclude Include="include\oni\utils\hook.h" />
     <ClInclude Include="include\oni\utils\kdlsym.h" />
     <ClInclude Include="include\oni\utils\kdlsym\default.h" />
+    <ClInclude Include="include\oni\utils\kdlsym\orbis405.h" />
+    <ClInclude Include="include\oni\utils\kdlsym\orbis455.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis501.h" />
     <ClInclude Include="include\oni\utils\kdlsym\orbis505.h" />
     <ClInclude Include="include\oni\utils\kernel.h" />
@@ -92,6 +94,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\oni\boot\patches.c" />
+    <ClCompile Include="src\oni\boot\patches\patches405.c" />
+    <ClCompile Include="src\oni\boot\patches\patches455.c" />
     <ClCompile Include="src\oni\boot\patches\patches501.c" />
     <ClCompile Include="src\oni\boot\patches\patches505.c" />
     <ClCompile Include="src\oni\messaging\message.c" />
