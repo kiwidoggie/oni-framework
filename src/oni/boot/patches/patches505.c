@@ -21,9 +21,9 @@ void install_prerunPatches_505()
 	
 	// Use "kmem" for all patches
 	uint8_t *kmem;
-	
-	// enable UART
-  	kmem = (uint8_t *)&gKernelBase[0x019ECEB0];
+
+	// Enable UART
+	kmem = (uint8_t *)&gKernelBase[0x009ECAE0];
 	kmem[0] = 0x00;
 
 	// Verbose Panics
@@ -64,7 +64,7 @@ void install_prerunPatches_505()
 	
 	kmem = (uint8_t *)&gKernelBase[0x000FCD56];
 	kmem[0] = 0x07;
-	
+
 	// Patch copyin/copyout to allow userland + kernel addresses in both params
 	kmem = (uint8_t *)&gKernelBase[0x001EA767];
 	kmem[0] = 0x90;
