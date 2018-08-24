@@ -18,7 +18,7 @@ void install_prerunPatches_405() {
 	void(*critical_exit)(void) = kdlsym(critical_exit);
 
 	// Apply patches
-	critical_exit();
+	critical_enter();
 	cpu_disable_wp();
 
 	// Use "kmem" for all patches
