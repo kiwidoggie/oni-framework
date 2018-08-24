@@ -10,9 +10,6 @@ endif
 # Project name
 PROJ_NAME := OniFramework
 
-# Platform Version
-ONI_PLATFORM := ONI_PLATFORM_ORBIS_BSD_405
-
 # C++ compiler
 CPPC	:=	clang
 
@@ -34,7 +31,7 @@ endif
 SRC_DIR	:=	src
 
 # Include directory paths
-I_DIRS	:=	-I. -Iinclude -I$(SRC_DIR) -I"$(BSD_INC)/include" -I"$(HDE_INC)" -Idepends/include
+I_DIRS	:=	-I. -Iinclude -I$(SRC_DIR) -I"$(BSD_INC)" -I"$(HDE_INC)" -Idepends/include
 
 # Library directory paths
 L_DIRS	:=	-L.	-Llib
