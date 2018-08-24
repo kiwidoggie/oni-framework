@@ -7,6 +7,7 @@
 /*
 These are the required functions in order for the Oni Framework to operate properly
 These are all offsets into the base of the kernel. They expect all standard FreeBSD 9 prototypes
+
 The reason we do not hardcode offsets here, is due to the different platforms that are supported, and
 for the platforms that do enable kernel ASLR (Address Space Layout Randomization?)
 */
@@ -22,7 +23,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr__sx_xunlock                            0x0038FBC0
 #define kdlsym_addr__vm_map_lock_read                      0x003920B0
 #define kdlsym_addr__vm_map_unlock_read                    0x00392100
-#define kdlsym_addr_allproc                                0x01AD7720
+#define kdlsym_addr_allproc                                0x01AD7718
 #define kdlsym_addr_allproc_lock                           0x01AD76B8
 #define kdlsym_addr_copyin                                 0x0014A890
 #define kdlsym_addr_copyinstr                              0x0014AD00
@@ -50,7 +51,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_memcmp                                 0x00242A60
 #define kdlsym_addr_memcpy                                 0x0014A6B0
 #define kdlsym_addr_memset                                 0x00302BD0
-//#define kdlsym_addr_mini_syscore_self_binary               0x0
+#define kdlsym_addr_mini_syscore_self_binary               0x01471468
 #define kdlsym_addr_mtx_init                               0x0030E0C0
 #define kdlsym_addr_mtx_lock_sleep                         0x0030D710
 #define kdlsym_addr_mtx_unlock_sleep                       0x0030DA10
@@ -107,7 +108,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_vmspace_acquire_ref                    0x00391EE0
 #define kdlsym_addr_vmspace_alloc                          0x00391A70
 #define kdlsym_addr_vmspace_free                           0x00391D10
-#define kdlsym_addr_vsnprintf                              0x00018360
+#define kdlsym_addr_vsnprintf                              0x000182D0
 #define kdlsym_addr_Xfast_syscall                          0x003095D0
 
 #endif

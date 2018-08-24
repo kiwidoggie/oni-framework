@@ -10,17 +10,17 @@
 // Updated by SiSTRo
 
 /*
-Please, please, please!
-Keep patches consistent with the used patch style for readability.
+	Please, please, please!
+	Keep patches consistent with the used patch style for readability.
 */
 void install_prerunPatches_455()
 {
 	// You must assign the kernel base pointer before anything is done
-	if (!gKernelBase)
+	if(!gKernelBase)
 		return;
 
 	void(*critical_enter)(void) = kdlsym(critical_enter);
-	void(*critical_exit)(void) = kdlsym(critical_exit);
+	void(*critical_exit)(void)  = kdlsym(critical_exit);
 
 	// Apply patches
 	critical_enter();
