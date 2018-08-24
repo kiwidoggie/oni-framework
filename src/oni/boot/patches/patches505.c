@@ -17,7 +17,7 @@ void install_prerunPatches_505()
 	uint8_t *kmem;
 
 	// Enable UART
-	kmem = (uint8_t *)&gKernelBase[0x009ECAE0];
+	kmem = (uint8_t *)&gKernelBase[0x019ECEB0];
 	kmem[0] = 0x00;
 
 	// Verbose Panics
