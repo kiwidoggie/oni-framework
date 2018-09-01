@@ -298,8 +298,8 @@ cleanup:
 
 uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 {
-	//void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
-	//void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
 	if (!server)
 		return false;
@@ -308,7 +308,7 @@ uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 		return false;
 
 	server->isRunning = false;
-	//_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	// Iterate through each of the connections and force connections to error and get cleaned up
 	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
@@ -334,7 +334,7 @@ uint8_t rpcserver_shutdown(struct rpcserver_t* server)
 	}
 
 
-	//_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
+	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	return true;
 }
@@ -358,13 +358,13 @@ int32_t rpcserver_findClientIndex(struct rpcserver_t* server, struct rpcconnecti
 
 void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnection_t* clientConnection)
 {
-	//void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
-	//void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
 
 	if (!server || !clientConnection)
 		return;
 
-	//_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
+	_mtx_lock_flags(&server->lock, 0, __FILE__, __LINE__);
 
 	// Remove the index
 	int32_t clientIndex = rpcserver_findClientIndex(server, clientConnection);
@@ -378,5 +378,5 @@ void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnecti
 	kfree(clientConnection, sizeof(*clientConnection));
 
 	WriteLog(LL_Debug, "onClientDisconnect: %d", clientIndex);
-	//_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
+	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
 }

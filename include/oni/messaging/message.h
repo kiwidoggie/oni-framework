@@ -11,14 +11,26 @@ struct allocation_t;
 
 enum MSG_CATEGORY
 {
+	// Message has no category, this is considered invalid
 	RPCCAT_NONE = 0,
+
+	// Mira's system messages
 	RPCCAT_SYSTEM,
+
+	// Logging messages
 	RPCCAT_LOG,
+
+	// Debugger messages
 	RPCCAT_DBG,
+
+	// File messages
 	RPCCAT_FILE,
+
+	// Command messages
 	RPCCAT_CMD,
+
+	// Maximum amount of categories that are allowed, otherwise message struct needs changing
 	RPCCAT_MAX = 14,
-	RPCCAT_COUNT
 };
 
 struct message_header_t
@@ -55,4 +67,4 @@ struct message_t
 };
 
 void message_init(struct message_t* message, int32_t socket);
-struct allocation_t* message_initParse(struct message_header_t* header, int32_t socket);
+//struct allocation_t* message_initParse(struct message_header_t* header, int32_t socket);

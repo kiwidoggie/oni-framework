@@ -1,7 +1,4 @@
-
-
-
-
+#include <oni/utils/ref.h>
 #include <oni/messaging/message.h>
 #include <oni/utils/kdlsym.h>
 #include <oni/utils/memory/allocator.h>
@@ -25,33 +22,33 @@ void message_init(struct message_t* message, int32_t socket)
 	message->payload = NULL;
 }
 
-struct allocation_t* message_initParse(struct message_header_t* header, int32_t socket)
-{
-	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
-
-	if (!header)
-		return NULL;
-
-	// Allocate space for the new message
-	struct allocation_t* allocation = __malloc(sizeof(struct message_t));
-	if (!allocation)
-		return NULL;
-
-	struct message_t* message = allocation->data;
-	if (!message)
-	{
-		__free(allocation);
-		return NULL;
-	}
-
-	// Copy the header over
-	memcpy(&message->header, header, sizeof(message->header));
-
-	// Null out the payload pointer
-	message->payload = NULL;
-
-	// Set the socket pointer
-	message->socket = socket;
-
-	return allocation;
-}
+//struct ref_t* message_initParse(struct message_header_t* header, int32_t socket)
+//{
+//	void* (*memcpy)(void* dest, const void* src, size_t n) = kdlsym(memcpy);
+//
+//	if (!header)
+//		return NULL;
+//
+//	// Allocate space for the new message
+//	struct allocation_t* allocation = __malloc(sizeof(struct message_t));
+//	if (!allocation)
+//		return NULL;
+//
+//	struct message_t* message = allocation->data;
+//	if (!message)
+//	{
+//		__free(allocation);
+//		return NULL;
+//	}
+//
+//	// Copy the header over
+//	memcpy(&message->header, header, sizeof(message->header));
+//
+//	// Null out the payload pointer
+//	message->payload = NULL;
+//
+//	// Set the socket pointer
+//	message->socket = socket;
+//
+//	return allocation;
+//}

@@ -5,6 +5,9 @@
 #include <oni/utils/memory/allocator.h>
 #include <oni/utils/logger.h>
 #include <oni/utils/kdlsym.h>
+#include <oni/utils/ref.h>
+
+#include <oni/framework.h>
 
 void __dec(struct allocation_t* allocation);
 
@@ -73,7 +76,7 @@ struct messagecategory_t* messagemanager_getCategory(struct messagemanager_t* ma
 	if (!manager)
 		return 0;
 
-	if (category >= RPCCAT_COUNT)
+	if (category >= RPCCAT_MAX)
 		return 0;
 
 	struct messagecategory_t* rpccategory = 0;
@@ -104,7 +107,7 @@ int32_t messagemanager_registerCallback(struct messagemanager_t* manager, uint32
 		return 0;
 
 	// Verify the listener category
-	if (callbackCategory >= RPCCAT_COUNT)
+	if (callbackCategory >= RPCCAT_MAX)
 		return 0;
 
 	struct messagecategory_t* category = messagemanager_getCategory(manager, callbackCategory);
@@ -154,7 +157,7 @@ int32_t messagemanager_unregisterCallback(struct messagemanager_t* manager, int3
 		return false;
 
 	// Verify the listener category
-	if (callbackCategory >= RPCCAT_COUNT)
+	if (callbackCategory >= RPCCAT_MAX)
 		return false;
 
 	struct messagecategory_t* category = messagemanager_getCategory(manager, callbackCategory);
@@ -191,34 +194,166 @@ int32_t messagemanager_unregisterCallback(struct messagemanager_t* manager, int3
 
 	return false;
 }
+//
+//void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocation_t* msg)
+//{
+//	if (!manager || !msg)
+//		return;
+//
+//	struct message_t* message = __get(msg);
+//	if (!message)
+//	{
+//		WriteLog(LL_Error, "could not get reference to message");
+//		return; // On initial get, don't jump to cleanup
+//	}
+//
+//	// We forward all replies
+//	if (message->header.request == false && message->socket != -1)
+//	{
+//		WriteLog(LL_Debug, "[+] Sending network response back to PC");
+//		kwrite(message->socket, &message->header, sizeof(message->header));
+//
+//		if (message->header.payloadSize > 0 && message->payload != NULL && message->header.error_type == 0)
+//			kwrite(message->socket, message->payload, message->header.payloadSize);
+//
+//		goto cleanup;
+//	}
+//
+//	if (message->header.category >= RPCCAT_MAX)
+//	{
+//		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->header.category, RPCCAT_COUNT);
+//		goto cleanup;
+//	}
+//
+//	struct messagecategory_t* category = messagemanager_getCategory(manager, message->header.category);
+//	if (!category)
+//	{
+//		WriteLog(LL_Debug, "[-] could not get dispatcher category");
+//		goto cleanup;
+//	}
+//
+//	// Iterate through all of the callbacks
+//	for (uint32_t l_CallbackIndex = 0; l_CallbackIndex < RPCCATEGORY_MAX_CALLBACKS; ++l_CallbackIndex)
+//	{
+//		// Get the category callback structure
+//		struct messagecategory_callback_t* l_Callback = category->callbacks[l_CallbackIndex];
+//
+//		// Check to see if this callback is used at all
+//		if (!l_Callback)
+//			continue;
+//
+//		// Check the type of the message
+//		if (l_Callback->type != message->header.error_type)
+//			continue;
+//
+//		// Call the callback with the provided message
+//		WriteLog(LL_Debug, "[+] calling callback %p(%p)", l_Callback->callback, msg);
+//		l_Callback->callback(msg);
+//	}
+//
+//cleanup:
+//	__dec(msg);
+//}
+//
+//void messagemanager_sendSuccessMessage(struct messagemanager_t* manager, struct allocation_t* msg)
+//{
+//	if (!manager || !msg)
+//		return;
+//
+//	struct message_t* message = __get(msg);
+//	if (!message)
+//	{
+//		WriteLog(LL_Error, "could not get reference to message");
+//		return;
+//	}
+//
+//	int request = message->header.request;
+//	message->header.request = false;
+//
+//	// We forward all replies
+//	if (message->socket < 0)
+//		goto cleanup;
+//
+//	// Set success error
+//	message->header.error_type = 0;
+//
+//	// Save the payload length
+//	uint16_t payloadLength = message->header.payloadSize;
+//
+//	// Set set the payload length to 0 because we are not sending a payload
+//	message->header.payloadSize = 0;
+//
+//	// Send response back to the PC
+//	kwrite(message->socket, &message->header, sizeof(message->header));
+//
+//	// Set the payload length back so memory cleanup will happen normally
+//	message->header.payloadSize = payloadLength;
+//
+//cleanup:
+//	message->header.request = request;
+//	__dec(msg);
+//}
+//
+//void messagemanager_sendErrorMessage(struct messagemanager_t* manager, struct allocation_t* msg, int32_t error)
+//{
+//	if (!manager || !msg)
+//		return;
+//
+//	struct message_t* message = __get(msg);
+//	if (!message)
+//	{
+//		WriteLog(LL_Error, "could not get reference to message");
+//		return;
+//	}
+//	int request = message->header.request;
+//	message->header.request = false;
+//
+//	// We forward all replies
+//	if (message->socket != -1)
+//	{
+//		// Set success error
+//		message->header.error_type = 0;
+//
+//		// Save the payload length
+//		uint16_t payloadLength = message->header.payloadSize;
+//
+//		// Set set the payload length to 0 because we are not sending a payload
+//		message->header.payloadSize = 0;
+//
+//		// The error should always be < 0
+//		message->header.error_type = error < 0 ? error : -error;
+//
+//		// Send response back to the PC
+//		kwrite(message->socket, &message->header, sizeof(message->header));
+//
+//		// Set the payload length back so memory cleanup will happen normally
+//		message->header.payloadSize = payloadLength;
+//	}
+//
+//	message->header.request = request;
+//
+//	__dec(msg);
+//}
 
-void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocation_t* msg)
+void messagemanager_sendMessageInternal(struct ref_t* msg)
 {
-	if (!manager || !msg)
+	// Verify the message manager and message are valid
+	if (!gFramework || !gFramework->messageManager || !msg)
 		return;
 
-	struct message_t* message = __get(msg);
+	struct messagemanager_t* manager = gFramework->messageManager;
+
+	struct message_t* message = ref_getIncrement(msg);
 	if (!message)
 	{
 		WriteLog(LL_Error, "could not get reference to message");
 		return; // On initial get, don't jump to cleanup
 	}
 
-	// We forward all replies
-	if (message->header.request == false && message->socket != -1)
+	// Validate our message category
+	if (message->header.category >= RPCCAT_MAX)
 	{
-		WriteLog(LL_Debug, "[+] Sending network response back to PC");
-		kwrite(message->socket, &message->header, sizeof(message->header));
-
-		if (message->header.payloadSize > 0 && message->payload != NULL && message->header.error_type == 0)
-			kwrite(message->socket, message->payload, message->header.payloadSize);
-
-		goto cleanup;
-	}
-
-	if (message->header.category >= RPCCAT_COUNT)
-	{
-		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->header.category, RPCCAT_COUNT);
+		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->header.category, RPCCAT_MAX);
 		goto cleanup;
 	}
 
@@ -249,76 +384,69 @@ void messagemanager_sendMessage(struct messagemanager_t* manager, struct allocat
 	}
 
 cleanup:
-	__dec(msg);
+	ref_release(msg);
 }
 
-void messagemanager_sendSuccessMessage(struct messagemanager_t* manager, struct allocation_t* msg)
+void messagemanager_sendRequestLocal(struct ref_t* msg)
 {
-	if (!manager || !msg)
+	if (!msg)
 		return;
 
-	struct message_t* message = __get(msg);
+	struct message_t* message = ref_getIncrement(msg);
 	if (!message)
-	{
-		WriteLog(LL_Error, "could not get reference to message");
 		return;
-	}
 
-	int request = message->header.request;
-	message->header.request = false;
+	message->header.request = true;
 
-	// We forward all replies
-	if (message->socket < 0)
-		goto cleanup;
+	messagemanager_sendMessageInternal(msg);
 
-	// Set success error
-	message->header.error_type = 0;
-
-	// Save the payload length
-	uint16_t payloadLength = message->header.payloadSize;
-
-	// Set set the payload length to 0 because we are not sending a payload
-	message->header.payloadSize = 0;
-
-	// Send response back to the PC
-	kwrite(message->socket, &message->header, sizeof(message->header));
-
-	// Set the payload length back so memory cleanup will happen normally
-	message->header.payloadSize = payloadLength;
-
-cleanup:
-	message->header.request = request;
-	__dec(msg);
+	ref_release(msg);
 }
 
-void messagemanager_sendErrorMessage(struct messagemanager_t* manager, struct allocation_t* msg, int32_t error)
+void messagemanager_sendResponseLocal(struct ref_t* msg, int32_t error)
 {
-	if (!manager || !msg)
+	if (!msg)
 		return;
 
-	struct message_t* message = __get(msg);
+	struct message_t* message = ref_getIncrement(msg);
 	if (!message)
-	{
-		WriteLog(LL_Error, "could not get reference to message");
 		return;
-	}
-	int request = message->header.request;
+	
+	message->header.error_type = error;
 	message->header.request = false;
 
-	// We forward all replies
-	if (message->socket != -1)
-	{
-		// Set success error
-		message->header.error_type = 0;
+	messagemanager_sendMessageInternal(msg);
 
+	ref_release(msg);
+}
+
+
+void messagemanager_sendResponse(struct ref_t* msg, int32_t error)
+/*
+	messagemanager_sendResponse
+
+	msg - Reference counted message_t
+	error - Error to set this message to
+
+	This function only sends back the message header with NO payload data
+	If payload data is to be sent, it will need to be sent directly after this call to sendResponse
+*/
+{
+	if (!msg)
+		return;
+
+	struct message_t* message = ref_getIncrement(msg);
+	if (!message)
+		return;
+
+	// Send the response back over the socket
+	if (message->socket > 0)
+	{
 		// Save the payload length
 		uint16_t payloadLength = message->header.payloadSize;
 
 		// Set set the payload length to 0 because we are not sending a payload
 		message->header.payloadSize = 0;
-
-		// The error should always be < 0
-		message->header.error_type = error < 0 ? error : -error;
 
 		// Send response back to the PC
 		kwrite(message->socket, &message->header, sizeof(message->header));
@@ -327,7 +455,13 @@ void messagemanager_sendErrorMessage(struct messagemanager_t* manager, struct al
 		message->header.payloadSize = payloadLength;
 	}
 
-	message->header.request = request;
+	messagemanager_sendResponseLocal(msg, error);
 
-	__dec(msg);
+	ref_release(msg);
+}
+
+void messagemanager_sendRequest(struct ref_t* msg)
+{
+	// We don't support requesting data from Mira to PC
+	messagemanager_sendRequestLocal(msg);
 }

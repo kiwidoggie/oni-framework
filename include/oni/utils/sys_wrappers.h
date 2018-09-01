@@ -43,3 +43,4 @@ extern caddr_t kmmap(caddr_t addr, size_t len, int prot, int flags, int fd, off_
 extern int kmunmap(void *addr, size_t len);
 extern int kwait4(int pid, int *status, int options, struct rusage *rusage);
 extern int ksetsockopt(int socket, int level, int name, caddr_t val, int valsize);
+extern int kftruncate(int fd, off_t length);

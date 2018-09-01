@@ -88,6 +88,7 @@
     <ClInclude Include="include\oni\utils\memory\allocator.h" />
     <ClInclude Include="include\oni\utils\memory\install.h" />
     <ClInclude Include="include\oni\utils\patches.h" />
+    <ClInclude Include="include\oni\utils\ref.h" />
     <ClInclude Include="include\oni\utils\syscall.h" />
     <ClInclude Include="include\oni\utils\sys_wrappers.h" />
     <ClInclude Include="include\oni\utils\types.h" />
@@ -113,6 +114,7 @@
     <ClCompile Include="src\oni\utils\log\logger.c" />
     <ClCompile Include="src\oni\utils\memory\allocator.c" />
     <ClCompile Include="src\oni\utils\memory\install.c" />
+    <ClCompile Include="src\oni\utils\ref.c" />
     <ClCompile Include="src\oni\utils\sys_wrappers.c" />
   </ItemGroup>
   <ItemGroup>

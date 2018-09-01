@@ -843,3 +843,28 @@ int ksetsockopt(int socket, int level, int name, caddr_t val, int valsize)
 	// success
 	return td->td_retval[0];
 }
+
+int kftruncate(int fd, off_t length)
+{
+	struct sysentvec* sv = kdlsym(self_orbis_sysvec);
+	struct sysent* sysents = sv->sv_table;
+	int(*sys_ftruncate)(struct thread *, struct ftruncate_args *) = (void*)sysents[480].sy_call;
+
+	int error;
+	struct ftruncate_args uap;
+	struct thread *td = curthread;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.fd = fd;
+	uap.length = length;
+
+	error = sys_ftruncate(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}

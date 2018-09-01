@@ -4,6 +4,7 @@
 
 #include <oni/utils/kdlsym.h>
 #include <oni/utils/memory/allocator.h>
+#include <oni/utils/ref.h>
 
 void rpccategory_init(struct messagecategory_t* dispatcherCategory, uint8_t category)
 {
@@ -34,12 +35,12 @@ int32_t rpccategory_findFreeCallbackIndex(struct messagecategory_t* category)
 	return -1;
 }
 
-void rpccategory_sendMessage(struct messagecategory_t* category, struct allocation_t* msg)
+void rpccategory_sendMessage(struct messagecategory_t* category, struct ref_t* msg)
 {
 	if (!category || !msg)
 		return;
 
-	struct message_t* message = __get(msg);
+	struct message_t* message = ref_getIncrement(msg);
 	if (!message)
 		return;
 
@@ -62,5 +63,5 @@ void rpccategory_sendMessage(struct messagecategory_t* category, struct allocati
 	}
 
 cleanup:
-	__dec(msg);
+	ref_release (msg);
 }

@@ -9,6 +9,7 @@
 #include <oni/utils/sys_wrappers.h>
 #include <oni/utils/kdlsym.h>
 #include <oni/utils/escape.h>
+#include <oni/utils/ref.h>
 
 #include <oni/framework.h>
 
@@ -132,7 +133,6 @@ void rpcconnection_clientThread(void* data)
 			goto cleanup;
 		}
 
-		//WriteLog(LL_Debug, "total data size %lld", totalDataSize);
 		// Recv the payload
 		while (dataReceived < totalDataSize)
 		{
@@ -145,14 +145,14 @@ void rpcconnection_clientThread(void* data)
 		}
 
 		// Create a new "local" message
-		struct allocation_t* allocation = message_initParse(header, connection->socket);
+		struct ref_t* allocation = ref_alloc(totalDataSize);
 		if (!allocation)
 		{
 			WriteLog(LL_Error, "could not allocate memory for message");
 			continue;
 		}
 
-		struct message_t* internalMessage = __get(allocation);
+		struct message_t* internalMessage = ref_getData(allocation);
 		if (!internalMessage)
 			goto do_dec;
 
@@ -171,21 +171,21 @@ void rpcconnection_clientThread(void* data)
 				goto do_dec;
 			}
 
-			//WriteLog(LL_Debug, "zeroing payload");
+			// Zero out and copy our buffer
 			memset(internalMessage->payload, 0, header->payloadSize);
 
-			//WriteLog(LL_Debug, "copying payload");
-			memcpy(internalMessage->payload, (((char*)(connection->buffer)) + sizeof(struct message_header_t)), header->payloadSize);
+			const void* messageAddress = internalMessage++;
+			memcpy(internalMessage->payload, messageAddress, header->payloadSize);
 
 		}
 		
 		WriteLog(LL_Debug, "dispatching message %p %p", gFramework->messageManager, allocation);
 
 		// Now that we have the full message chunk, parse the category and the type and get it the fuck outa here
-		messagemanager_sendMessage(gFramework->messageManager, allocation);
+		messagemanager_sendRequest(allocation);
 
 	do_dec:
-		__dec(allocation);
+		ref_release(allocation);
 	}
 
 	
