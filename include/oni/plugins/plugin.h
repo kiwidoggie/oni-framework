@@ -7,6 +7,14 @@
 // Plugin description length
 #define PLUGIN_DESC_LEN		256
 
+struct plugin_bitmap_t
+{
+	const uint8_t* data;
+	const uint32_t dataLength;
+	const uint32_t width;
+	const uint32_t height;
+};
+
 struct plugin_t
 /*
 	plugin_t
