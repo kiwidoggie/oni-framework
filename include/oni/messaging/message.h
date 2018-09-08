@@ -1,7 +1,3 @@
-
-
-
-
 #pragma once
 #include <oni/utils/types.h>
 
@@ -54,17 +50,10 @@ struct message_header_t
 	uint64_t reserved : 7;
 };
 
-struct message_t
-{
-	// Initial header
-	struct message_header_t header;
-
-	// Socket descritpr
-	int32_t socket;
-
-	// Payload
-	void* payload;
-};
-
-void message_init(struct message_t* message, int32_t socket);
+//void message_init(struct message_header_t* message, int32_t socket);
 //struct allocation_t* message_initParse(struct message_header_t* header, int32_t socket);
+
+struct thread;
+struct rpcserver_t;
+
+int32_t rpcserver_findSocketFromThread(struct rpcserver_t* server, struct thread* td);

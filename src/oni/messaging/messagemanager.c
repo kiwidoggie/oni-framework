@@ -11,6 +11,18 @@
 
 void __dec(struct allocation_t* allocation);
 
+void* message_getData(struct message_header_t* message)
+{
+	if (!message)
+		return NULL;
+
+	if (message->payloadSize == 0)
+		return NULL;
+
+	// The data starts right after the message
+	return ((uint8_t*)message) + sizeof(*message);
+}
+
 void messagemanager_init(struct messagemanager_t* manager)
 {
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
@@ -203,7 +215,7 @@ void messagemanager_sendMessageInternal(struct ref_t* msg)
 
 	struct messagemanager_t* manager = gFramework->messageManager;
 
-	struct message_t* message = ref_getIncrement(msg);
+	struct message_header_t* message = ref_getDataAndAcquire(msg);
 	if (!message)
 	{
 		WriteLog(LL_Error, "could not get reference to message");
@@ -211,13 +223,13 @@ void messagemanager_sendMessageInternal(struct ref_t* msg)
 	}
 
 	// Validate our message category
-	if (message->header.category >= RPCCAT_MAX)
+	if (message->category >= RPCCAT_MAX)
 	{
-		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->header.category, RPCCAT_MAX);
+		WriteLog(LL_Error, "[-] invalid message category: %d max: %d", message->category, RPCCAT_MAX);
 		goto cleanup;
 	}
 
-	struct messagecategory_t* category = messagemanager_getCategory(manager, message->header.category);
+	struct messagecategory_t* category = messagemanager_getCategory(manager, message->category);
 	if (!category)
 	{
 		WriteLog(LL_Debug, "[-] could not get dispatcher category");
@@ -235,7 +247,7 @@ void messagemanager_sendMessageInternal(struct ref_t* msg)
 			continue;
 
 		// Check the type of the message
-		if (l_Callback->type != message->header.error_type)
+		if (l_Callback->type != message->error_type)
 			continue;
 
 		// Call the callback with the provided message
@@ -252,11 +264,11 @@ void messagemanager_sendRequestLocal(struct ref_t* msg)
 	if (!msg)
 		return;
 
-	struct message_t* message = ref_getIncrement(msg);
+	struct message_header_t* message = ref_getDataAndAcquire(msg);
 	if (!message)
 		return;
 
-	message->header.request = true;
+	message->request = true;
 
 	messagemanager_sendMessageInternal(msg);
 
@@ -268,53 +280,74 @@ void messagemanager_sendResponseLocal(struct ref_t* msg, int32_t error)
 	if (!msg)
 		return;
 
-	struct message_t* message = ref_getIncrement(msg);
+	struct message_header_t* message = ref_getDataAndAcquire(msg);
 	if (!message)
 		return;
 	
-	message->header.error_type = error;
-	message->header.request = false;
+	message->error_type = error;
+	message->request = false;
 
 	messagemanager_sendMessageInternal(msg);
 
 	ref_release(msg);
 }
 
+#include <oni/rpc/rpcserver.h>
+#include <oni/framework.h>
 
 void messagemanager_sendResponse(struct ref_t* msg, int32_t error)
 /*
 	messagemanager_sendResponse
 
-	msg - Reference counted message_t
+	msg - Reference counted message_header_t
 	error - Error to set this message to
 
-	This function only sends back the message header with NO payload data
-	If payload data is to be sent, it will need to be sent directly after this call to sendResponse
+	This function send the message header and then the payload data
 */
 {
 	if (!msg)
 		return;
 
-	struct message_t* message = ref_getIncrement(msg);
+	struct message_header_t* message = ref_getDataAndAcquire(msg);
 	if (!message)
 		return;
 
+	message->request = false;
+	message->error_type = error;
+
+	struct rpcserver_t* rpcServer = gFramework->rpcServer;
+
+	int32_t connectionSocket = rpcserver_findSocketFromThread(rpcServer, curthread);
+	WriteLog(LL_Debug, "connection socket found: %d", connectionSocket);
+
 	// Send the response back over the socket
-	if (message->socket > 0)
+	if (connectionSocket > 0)
 	{
 		// Save the payload length
-		uint16_t payloadLength = message->header.payloadSize;
-
-		// Set set the payload length to 0 because we are not sending a payload
-		message->header.payloadSize = 0;
+		uint16_t payloadLength = message->payloadSize;
 
 		// Send response back to the PC
-		kwrite(message->socket, &message->header, sizeof(message->header));
+		ssize_t ret = kwrite(connectionSocket, message, sizeof(*message));
+		if (ret < 0)
+		{
+			WriteLog(LL_Error, "could not write (%p) message header (%d).", message, ret);
+			goto cont;
+		}
 
-		// Set the payload length back so memory cleanup will happen normally
-		message->header.payloadSize = payloadLength;
+		void* payloadData = message_getData(message);
+		// If we have a payload send it back
+		if (payloadLength > 0 && payloadData != NULL)
+		{
+			ret = kwrite(connectionSocket, payloadData, payloadLength);
+			if (ret < 0)
+			{
+				WriteLog(LL_Error, "could not write (%p) payload (%d).", payloadData, ret);
+				goto cont;
+			}
+		}
 	}
 
+cont:
 	messagemanager_sendResponseLocal(msg, error);
 
 	ref_release(msg);

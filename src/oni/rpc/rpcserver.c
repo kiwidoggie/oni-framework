@@ -191,10 +191,10 @@ void rpcserver_serverThread(void* data)
 	WriteLog(LL_Debug, "server running.");
 
 	struct timeval timeout;
-	timeout.tv_sec = 3;
+	timeout.tv_sec = 5;
 	timeout.tv_usec = 0;
 
-	int32_t result = ksetsockopt(server->socket, SOL_SOCKET, SO_RCVTIMEO, (caddr_t)&timeout, sizeof(timeout));
+	int32_t result = 0;/*ksetsockopt(server->socket, SOL_SOCKET, SO_RCVTIMEO, (caddr_t)&timeout, sizeof(timeout));
 	if (result < 0)
 	{
 		WriteLog(LL_Error, "could not set recv timeout (%d).", result);
@@ -206,10 +206,9 @@ void rpcserver_serverThread(void* data)
 	{
 		WriteLog(LL_Error, "could not set send timeout (%d).", result);
 		goto cleanup;
-	}
+	}*/
 
 	// SO_LINGER
-	timeout.tv_sec = 0;
 	result = ksetsockopt(server->socket, SOL_SOCKET, SO_LINGER, (caddr_t)&timeout, sizeof(timeout));
 	if (result < 0)
 	{
@@ -248,6 +247,21 @@ void rpcserver_serverThread(void* data)
 			server->isRunning = false;
 			goto cleanup;
 		}
+
+		//timeout.tv_sec = 0;
+		//result = ksetsockopt(clientConnection->socket, SOL_SOCKET, SO_RCVTIMEO, (caddr_t)&timeout, sizeof(timeout));
+		//if (result < 0)
+		//{
+		//	WriteLog(LL_Error, "could not set recv timeout (%d).", result);
+		//	goto cleanup;
+		//}
+
+		//result = ksetsockopt(clientConnection->socket, SOL_SOCKET, SO_SNDTIMEO, (caddr_t)&timeout, sizeof(timeout));
+		//if (result < 0)
+		//{
+		//	WriteLog(LL_Error, "could not set send timeout (%d).", result);
+		//	goto cleanup;
+		//}
 
 		// Below is a stupid coding pattern to prevent multiple locks/unlocks
 
@@ -379,4 +393,23 @@ void rpcserver_onClientDisconnect(struct rpcserver_t* server, struct rpcconnecti
 
 	WriteLog(LL_Debug, "onClientDisconnect: %d", clientIndex);
 	_mtx_unlock_flags(&server->lock, 0, __FILE__, __LINE__);
+}
+
+int32_t rpcserver_findSocketFromThread(struct rpcserver_t * server, struct thread * td)
+{
+	if (!server || !td)
+		return -1;
+
+	// Iterate through all connections and compare threads
+	for (uint32_t i = 0; i < ARRAYSIZE(server->connections); ++i)
+	{
+		struct rpcconnection_t* connection = server->connections[i];
+		if (!connection)
+			continue;
+
+		if (connection->thread == td)
+			return connection->socket;
+	}
+
+	return -1;
 }

@@ -36,6 +36,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_fpu_ctx								   0x0274C040
 #define kdlsym_addr_fpu_kern_enter                         0x001BFE80
 #define kdlsym_addr_fpu_kern_leave                         0x001BFF80
+#define kdlsym_addr_free								   0x0010E350
 #define kdlsym_addr_gpu_va_page_list                       0x0271E208
 #define kdlsym_addr_icc_nvs_read                           0x00395460
 #define kdlsym_addr_kern_close                             0x000C0F40
@@ -52,6 +53,8 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_kthread_add                            0x00138250
 #define kdlsym_addr_kthread_exit                           0x00138530
 #define kdlsym_addr_M_MOUNT                                0x019BF300
+#define kdlsym_addr_M_TEMP								   0x014B4110
+#define kdlsym_addr_malloc								   0x0010E140
 #define kdlsym_addr_memcmp                                 0x00050AC0
 #define kdlsym_addr_memcpy                                 0x001EA420
 #define kdlsym_addr_memset                                 0x003201F0
@@ -69,6 +72,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_realloc                                0x0010E480
 #define kdlsym_addr_rootvnode                              0x022C19F0
 #define kdlsym_addr_RsaesPkcs1v15Dec2048CRT 			   0x001FD6C0
+#define kdlsym_addr_sbl_eap_internal_partition_key		   0x02790C90
 #define kdlsym_addr_sbl_pfs_sx							   0x0271E5D8
 #define kdlsym_addr_sceSblAuthMgrIsLoadable2               0x0063C110
 #define kdlsym_addr_sceSblAuthMgrSmStart                   0x00641500

@@ -10,7 +10,7 @@
 
 #define RPCDISPATCHER_MAX_CATEGORIES	32
 
-struct message_t;
+struct message_header_t;
 struct rpclistener_t;
 struct messagecategory_t;
 struct ref_t;
@@ -44,3 +44,5 @@ void messagemanager_sendResponseLocal(struct ref_t* message, int32_t error);
 void messagemanager_sendResponse(struct ref_t* message, int32_t error);
 
 void messagemanager_pluginSendResponse(struct messagemanager_t* messageManager, struct ref_t* message);
+
+void* message_getData(struct message_header_t* message);

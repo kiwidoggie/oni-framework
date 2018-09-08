@@ -13,6 +13,7 @@
 
 struct rpcconnection_t;
 struct proc;
+struct thread;
 
 struct rpcserver_t
 {

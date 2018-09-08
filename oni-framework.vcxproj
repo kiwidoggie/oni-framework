@@ -71,6 +71,7 @@
     <ClInclude Include="include\oni\plugins\pluginmanager.h" />
     <ClInclude Include="include\oni\rpc\rpcconnection.h" />
     <ClInclude Include="include\oni\rpc\rpcserver.h" />
+    <ClInclude Include="include\oni\trainers\trainer.h" />
     <ClInclude Include="include\oni\utils\cpu.h" />
     <ClInclude Include="include\oni\utils\dynlib.h" />
     <ClInclude Include="include\oni\utils\escape.h" />
@@ -99,7 +100,6 @@
     <ClCompile Include="src\oni\boot\patches\patches455.c" />
     <ClCompile Include="src\oni\boot\patches\patches501.c" />
     <ClCompile Include="src\oni\boot\patches\patches505.c" />
-    <ClCompile Include="src\oni\messaging\message.c" />
     <ClCompile Include="src\oni\messaging\messagecategory.c" />
     <ClCompile Include="src\oni\messaging\messagemanager.c" />
     <ClCompile Include="src\oni\plugins\pluginmanager.c" />

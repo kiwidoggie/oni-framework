@@ -75,3 +75,7 @@ kfree
 Frees the memory at `address` with size `size`
 */
 void kfree(void* address, size_t size);
+
+void* kcalloc(size_t n, size_t size);
+
+void* krealloc(void* address, size_t size);

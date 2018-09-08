@@ -40,11 +40,11 @@ void rpccategory_sendMessage(struct messagecategory_t* category, struct ref_t* m
 	if (!category || !msg)
 		return;
 
-	struct message_t* message = ref_getIncrement(msg);
+	struct message_header_t* message = ref_getDataAndAcquire(msg);
 	if (!message)
 		return;
 
-	if (message->header.category != category->category)
+	if (message->category != category->category)
 		goto cleanup;
 
 	for (uint32_t i = 0; i < RPCCATEGORY_MAX_CALLBACKS; ++i)
@@ -53,7 +53,7 @@ void rpccategory_sendMessage(struct messagecategory_t* category, struct ref_t* m
 		if (!callback)
 			continue;
 
-		if (callback->type != message->header.error_type)
+		if (callback->type != message->error_type)
 			continue;
 
 		if (!callback->callback)
