@@ -11,13 +11,6 @@ void install_prerunPatches_501()
 	// You must assign the kernel base pointer before anything is done
 	if (!gKernelBase)
 		return;
-
-	void(*critical_enter)(void) = kdlsym(critical_enter);
-	void(*crtical_exit)(void)   = kdlsym(critical_exit);
-
-	// Apply patches
-	critical_enter();
-	cpu_disable_wp();
 	
 	// Use "kmem" for all patches
 	uint8_t *kmem;
@@ -126,7 +119,4 @@ void install_prerunPatches_501()
 	kmem[2] = 0xC0;
 	kmem[3] = 0x90;
 	kmem[4] = 0x90;
-
-	cpu_enable_wp();
-	crtical_exit();
 }
