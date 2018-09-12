@@ -1,6 +1,5 @@
 #include <oni/boot/patches.h>
 #include <oni/utils/kdlsym.h>
-#include <oni/utils/cpu.h>
 
 /*
 	Please, please, please!
@@ -12,7 +11,6 @@ void install_prerunPatches_505()
 	if (!gKernelBase)
 		return;
 
-	
 	// Use "kmem" for all patches
 	uint8_t *kmem;
 
@@ -121,5 +119,4 @@ void install_prerunPatches_505()
 	kmem[2] = 0xC0;
 	kmem[3] = 0x90;
 	kmem[4] = 0x90;
-
 }
