@@ -84,6 +84,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sceSblKeymgrSetKeyForPfs			   0x0062D3A0
 #define kdlsym_addr_sceSblKeymgrSmCallfunc                 0x0062DEC0
 #define kdlsym_addr_sceSblPfsSetKeys					   0x0061EBC0
+#define kdlsym_addr_sceSblServiceMailbox				   0x00632160
 #define kdlsym_addr_self_orbis_sysvec                      0x019BBCD0
 #define kdlsym_addr_Sha256Hmac                             0x002D52E0
 #define kdlsym_addr_snprintf                               0x00435F80
@@ -123,6 +124,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sys_write                              0x00152EB0
 #define kdlsym_addr_trap_fatal                             0x00171470
 #define kdlsym_addr_utilUSleep                             0x00658850
+#define kdlsym_addr_vm_map_lookup_entry					   0x0019F650
 #define kdlsym_addr_vmspace_acquire_ref                    0x0019EE80
 #define kdlsym_addr_vmspace_alloc                          0x0019EA10
 #define kdlsym_addr_vmspace_free                           0x0019ECB0
