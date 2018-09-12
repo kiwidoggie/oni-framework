@@ -216,6 +216,15 @@ void rpcserver_serverThread(void* data)
 		goto cleanup;
 	}
 
+	// SO_LINGER
+	timeout.tv_sec = 0;
+	result = ksetsockopt(server->socket, SOL_SOCKET, SO_LINGER, (caddr_t)&timeout, sizeof(timeout));
+	if (result < 0)
+	{
+		WriteLog(LL_Error, "could not set send timeout (%d).", result);
+		goto cleanup;
+	}
+
 	// Create a new client connection
 	struct rpcconnection_t* clientConnection = (struct rpcconnection_t*)kmalloc(sizeof(struct rpcconnection_t));
 	if (!clientConnection)
