@@ -868,3 +868,25 @@ int kftruncate(int fd, off_t length)
 	// success
 	return td->td_retval[0];
 }
+
+pid_t krfork_t(int flags, struct thread* td)
+{
+	struct sysentvec* sv = kdlsym(self_orbis_sysvec);
+	struct sysent* sysents = sv->sv_table;
+	int(*sys_rfork)(struct thread *, struct rfork_args *) = (void*)sysents[251].sy_call;
+
+	int error;
+	struct rfork_args uap;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.flags = flags;
+	error = sys_rfork(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return (pid_t)td->td_retval[0];
+}
