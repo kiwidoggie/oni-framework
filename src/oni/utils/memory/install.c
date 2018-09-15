@@ -173,6 +173,8 @@ void SelfElevateAndRunStage2(struct thread* td, struct kexec_uap* uap)
 
 	memcpy(kernelPayload, (void*)payloadBase, payloadSize);
 
+	initParams->payloadBase = (uint64_t)kernelPayload;
+
 	printf("[*] Kernel payload peek: %02X %02X %02X %02X %02X\n", kernelPayload[0], kernelPayload[1], kernelPayload[2], kernelPayload[3], kernelPayload[4]);
 	printf("[*] Kernel oni_kernel_startup peek: %02X %02X %02X %02X %02X\n", kernelStartup[0], kernelStartup[1], kernelStartup[2], kernelStartup[3], kernelStartup[4]);
 

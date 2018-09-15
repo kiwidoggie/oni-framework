@@ -41,7 +41,7 @@ LIBS	:=
 
 # C++ Flags don't use optimizations -O0 must be used for clang, gcc runs with 02 just fine
 # Removed From GCC: -nostartfiles
-CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D_STANDALONE -D"ONI_PLATFORM=${ONI_PLATFORM}" -std=c11 -O0 -fno-builtin -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
+CFLAGS	:= $(I_DIRS) -D_DEBUG -D_KERNEL=1 -D_STANDALONE -D"ONI_PLATFORM=${ONI_PLATFORM}" -D__LP64__ -std=c11 -O0 -fno-builtin -nodefaultlibs -nostdlib -nostdinc -fcheck-new -ffreestanding -fno-strict-aliasing -fno-exceptions -fno-asynchronous-unwind-tables -Wall -m64 -fPIC -Werror -Wno-unknown-pragmas
 
 # Assembly flags
 # Removed From GCC: -nostartfiles

@@ -32,6 +32,7 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_dmem_start_app_process                 0x002468E0
 #define kdlsym_addr_eventhandler_register                  0x001EC2F0
 #define kdlsym_addr_exec_new_vmspace                       0x0038A940
+#define kdlsym_addr_faultin								   0x00006DD0
 #define kdlsym_addr_fget_unlocked                          0x000C3530
 #define kdlsym_addr_fpu_ctx								   0x0274C040
 #define kdlsym_addr_fpu_kern_enter                         0x001BFE80
@@ -130,6 +131,6 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_vmspace_free                           0x0019ECB0
 #define kdlsym_addr_vsnprintf                              0x00436020
 #define kdlsym_addr_Xfast_syscall                          0x000001C0
-
+#define kdlsym_addr_wakeup								   0x003FB570
 
 #endif

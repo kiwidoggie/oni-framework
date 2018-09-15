@@ -23,6 +23,7 @@ int proc_rw_mem_pid(int pid, void* ptr, size_t size, void* data, size_t* n, int 
 int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, int write)
 {
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
+	int(*proc_rwmem)(struct proc *p, struct uio *uio) = kdlsym(proc_rwmem);
 
 	struct thread* td = curthread;
 	struct iovec iov;
@@ -54,7 +55,7 @@ int proc_rw_mem(struct proc* p, void* ptr, size_t size, void* data, size_t* n, i
 	uio.uio_rw = write ? UIO_WRITE : UIO_READ;
 	uio.uio_td = td;
 
-	int(*proc_rwmem)(struct proc *p, struct uio *uio) = kdlsym(proc_rwmem);
+	
 	ret = proc_rwmem(p, &uio);
 	if (n)
 		*n = (size_t)((ssize_t)size - uio.uio_resid);
