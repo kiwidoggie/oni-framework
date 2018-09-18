@@ -23,6 +23,8 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr__sx_xunlock                            0x0038FBC0
 #define kdlsym_addr__vm_map_lock_read                      0x003920B0
 #define kdlsym_addr__vm_map_unlock_read                    0x00392100
+#define kdlsym_addr_AesCbcCfb128Decrypt                    0x0017A6F0
+#define kdlsym_addr_AesCbcCfb128Encrypt                    0x0017A4C0
 #define kdlsym_addr_allproc                                0x01AD7718
 #define kdlsym_addr_allproc_lock                           0x01AD76B8
 #define kdlsym_addr_copyin                                 0x0014A890
@@ -32,7 +34,13 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 //#define kdlsym_addr_dmem_start_app_process                 0x0
 #define kdlsym_addr_eventhandler_register                  0x003C97F0
 #define kdlsym_addr_exec_new_vmspace                       0x002E8850
+#define kdlsym_addr_faultin                                0x0030EE10
 #define kdlsym_addr_fget_unlocked                          0x0042D160
+#define kdlsym_addr_fpu_ctx                                0x0251CCC0
+#define kdlsym_addr_fpu_kern_enter                         0x00059580
+#define kdlsym_addr_fpu_kern_leave                         0x00059680
+#define kdlsym_addr_free                                   0x003F7930
+#define kdlsym_addr_gpu_va_page_list                       0x02519DD0
 #define kdlsym_addr_icc_nvs_read                           0x0001B850
 #define kdlsym_addr_kern_close                             0x0042AC10
 #define kdlsym_addr_kern_mkdirat                           0x00444E60
@@ -48,6 +56,8 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_kthread_add                            0x00464C90
 #define kdlsym_addr_kthread_exit                           0x00464F60
 #define kdlsym_addr_M_MOUNT                                0x0144F2A0
+#define kdlsym_addr_M_TEMP                                 0x01993B30
+#define kdlsym_addr_malloc                                 0x003F7750
 #define kdlsym_addr_memcmp                                 0x00242A60
 #define kdlsym_addr_memcpy                                 0x0014A6B0
 #define kdlsym_addr_memset                                 0x00302BD0
@@ -59,15 +69,27 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_pmap_activate                          0x00427530
 #define kdlsym_addr_printf                                 0x00017F30
 #define kdlsym_addr_prison0                                0x010399B0
+#define kdlsym_addr_proc0                                  0x01B2FC00
+#define kdlsym_addr_proc_reparent                          0x0015C3C0
 #define kdlsym_addr_proc_rwmem                             0x0017CB70
 #define kdlsym_addr_realloc                                0x003F7A60
 #define kdlsym_addr_rootvnode                              0x021AFA30
+#define kdlsym_addr_RsaesPkcs1v15Dec2048CRT                0x003EF200
+#define kdlsym_addr_sbl_eap_internal_partition_key         0x0258CCD0
+#define kdlsym_addr_sbl_pfs_sx                             0x0
 #define kdlsym_addr_sceSblAuthMgrIsLoadable2               0x00625C50
 #define kdlsym_addr_sceSblAuthMgrSmStart                   0x00622020
 #define kdlsym_addr_sceSblAuthMgrSmVerifyHeader            0x00623250
 #define kdlsym_addr_sceSblAuthMgrVerifyHeader              0x00625CB0
+#define kdlsym_addr_sceSblDriverSendMsg                    0x00601680
 #define kdlsym_addr_sceSblGetEAPInternalPartitionKey       0x00609D20
+#define kdlsym_addr_sceSblKeymgrClearKey                   0x0060DF40
+#define kdlsym_addr_sceSblKeymgrSetKeyForPfs               0x0060DD70
+#define kdlsym_addr_sceSblKeymgrSmCallfunc                 0x0060E680
+#define kdlsym_addr_sceSblPfsSetKeys                       0x00606E00
+#define kdlsym_addr_sceSblServiceMailbox                   0x006146C0
 #define kdlsym_addr_self_orbis_sysvec                      0x01460610
+#define kdlsym_addr_Sha256Hmac                             0x002D5C50
 #define kdlsym_addr_snprintf                               0x00018230
 #define kdlsym_addr_sscanf                                 0x00302100
 #define kdlsym_addr_strcmp                                 0x001DAEF0
@@ -105,10 +127,12 @@ for the platforms that do enable kernel ASLR (Address Space Layout Randomization
 #define kdlsym_addr_sys_write                              0x0005F1A0
 #define kdlsym_addr_trap_fatal                             0x003DBD20
 #define kdlsym_addr_utilUSleep                             0x0065F290
+#define kdlsym_addr_vm_map_lookup_entry                    0x00392C70
 #define kdlsym_addr_vmspace_acquire_ref                    0x00391EE0
 #define kdlsym_addr_vmspace_alloc                          0x00391A70
 #define kdlsym_addr_vmspace_free                           0x00391D10
 #define kdlsym_addr_vsnprintf                              0x000182D0
 #define kdlsym_addr_Xfast_syscall                          0x003095D0
+#define kdlsym_addr_wakeup                                 0x00261140
 
 #endif
