@@ -768,6 +768,27 @@ int ksetuid(uid_t uid)
 	return td->td_retval[0];
 }
 
+int ksetuid_t(uid_t uid, struct thread* td)
+{
+	int(*sys_setuid)(struct thread *, struct setuid_args *) = kdlsym(sys_setuid);
+
+	int error;
+	struct setuid_args uap;
+
+	// clear errors
+	td->td_retval[0] = 0;
+
+	// call syscall
+	uap.uid = uid;
+
+	error = sys_setuid(td, &uap);
+	if (error)
+		return -error;
+
+	// success
+	return td->td_retval[0];
+}
+
 int kptrace(int req, pid_t pid, caddr_t addr, int data)
 {
 	int(*sys_ptrace)(struct thread *, struct ptrace_args *) = kdlsym(sys_ptrace);

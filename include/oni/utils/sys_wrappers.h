@@ -30,6 +30,7 @@ extern int kstat(char* path, struct stat* buf);
 extern int kstat_t(char* path, struct stat* buf, struct thread* td);
 extern int kunlink(char* path);
 extern int ksetuid(uid_t uid);
+int ksetuid_t(uid_t uid, struct thread* td);
 extern int kptrace(int req, pid_t pid, caddr_t addr, int data);
 extern int kkill(int pid, int signum);
 extern int kdup2(int oldd, int newd);
