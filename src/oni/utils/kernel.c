@@ -91,8 +91,8 @@ error:
 // Credits: flatz
 int proc_get_vm_map(struct proc* p, struct proc_vm_map_entry** entries, size_t* num_entries) 
 {
-	//void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
-	//void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
 	struct vmspace* (*vmspace_acquire_ref)(struct proc *) = kdlsym(vmspace_acquire_ref);
 	void(*vmspace_free)(struct vmspace *) = kdlsym(vmspace_free);
 	void* (*memset)(void *s, int c, size_t n) = kdlsym(memset);
@@ -205,8 +205,8 @@ struct proc* proc_find_by_name(const char* name)
 {
 	int(*_sx_slock)(struct sx *sx, int opts, const char *file, int line) = kdlsym(_sx_slock);
 	void(*_sx_sunlock)(struct sx *sx, const char *file, int line) = kdlsym(_sx_sunlock);
-	//void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
-	//void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
+	void(*_mtx_unlock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_unlock_flags);
+	void(*_mtx_lock_flags)(struct mtx *m, int opts, const char *file, int line) = kdlsym(_mtx_lock_flags);
 
 	struct sx* allproclock = (struct sx*)kdlsym(allproc_lock);
 	struct proclist* allproc = (struct proclist*)*(uint64_t*)kdlsym(allproc);
