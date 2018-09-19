@@ -66,3 +66,14 @@ Oni-Framework does not rely on a fully functional libc, and is built to build, a
 If you want to contribute, just submit a pull request. Otherwise, there is no real support for this at this point. This may change in the future
 
 ![twitter](http://i.imgur.com/tXSoThF.png) [@diwidog](https://twitter.com/diwidog)
+
+#### Message Layout
+
+|Bit Offset   | Bit Length   | Name   | Description   |Usage   |
+|---|---|---|---|---|
+| 0  | 3  | Magic  | This is a simple packet header magic in order to ensure that messages are being processed properly   | REQUIRED: Must be set to 0101b or 5 (dec)   |
+|3   | 4  | Message Category  | This describes which category to route the message to on oni-framework side   | REQUIRED: Maximum of 14 categories (5 in use currently)   |
+| 7   | 32   | Error/MessageType   | This field contains the error code, or the message type  | REQUESTS: This must be set to the message type which is calculated currently by CRC32(MessageName), RESPONSE: This is set to the error code/return value   |
+| 39   | 16   | Payload Size   | This is the length of data that comes after the message header  | OPTIONAL: Set to 0 if no payload, otherwise will expect data   |
+| 55   | 1  | Request   | This flag will be set to 1 if the message is a request, or 0 if it is a response  | REQUIRED   |
+| 56  | 7  | Reserved  | Reserved   | IGNORED: Set to 0   |
